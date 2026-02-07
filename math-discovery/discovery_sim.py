@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Mathematical Discovery Simulation
-Agents attempt to discover new theorems while a naysayer validates them
+Orchestrates explorer agents and naysayer to discover new theorems
 """
 
 import time
@@ -12,276 +12,269 @@ from knowledge_base import KnowledgeBase, MathTheorem
 from explorer import ExplorerAgent
 from naysayer import NaysayerAgent
 import argparse
-from datetime import datetime
+import os
 
 class DiscoverySimulation:
     """Main simulation engine for mathematical discovery."""
     
-    def __init__(self, num_explorers: int = 3, verbose: bool = True):
+    def __init__(self, num_explorers: int = 3, save_interval: int = 10):
         self.kb = KnowledgeBase()
-        self.explorers: List[ExplorerAgent] = []
-        self.naysayer = NaysayerAgent("The Grand Skeptic")
-        self.verbose = verbose
-        self.discovery_history = []
-        self.start_time = time.time()
-        self.cycle_count = 0
+        self.naysayer = NaysayerAgent("The Skeptic")
         
         # Create explorer agents with different personalities
+        self.explorers = []
         explorer_names = [
-            "Euler", "Gauss", "Ramanujan", "Fermat", "Newton",
-            "Leibniz", "Hilbert", "Cantor", "Riemann", "Poincaré"
+            "Euler", "Gauss", "Ramanujan", "Erdos", "Noether",
+            "Hilbert", "Riemann", "Cauchy", "Fermat", "Pascal"
         ]
         
         for i in range(num_explorers):
             name = explorer_names[i % len(explorer_names)]
-            self.explorers.append(ExplorerAgent(f"{name}_{i+1}"))
+            self.explorers.append(ExplorerAgent(f"{name}-{i+1}"))
         
-        if self.verbose:
-            print("="*70)
-            print("MATHEMATICAL DISCOVERY SIMULATION".center(70))
-            print("="*70)
-            print(f"Initialized with {num_explorers} explorer agents")
-            print(f"Knowledge base contains {len(self.kb.theorems)} initial theorems")
-            print(f"Naysayer: {self.naysayer.name}")
-            print("="*70)
+        self.save_interval = save_interval
+        self.discovery_count = 0
+        self.cycle_count = 0
+        self.start_time = time.time()
+        
+        # Statistics tracking
+        self.stats = {
+            'total_attempts': 0,
+            'successful_discoveries': 0,
+            'refuted_conjectures': 0,
+            'novel_theorems': 0,
+            'discovery_timeline': [],
+            'agent_performance': {}
+        }
+        
+        # Initialize agent performance tracking
+        for explorer in self.explorers:
+            self.stats['agent_performance'][explorer.name] = {
+                'attempts': 0,
+                'discoveries': 0,
+                'refuted': 0
+            }
+        
+        self.stats['agent_performance'][self.naysayer.name] = {
+            'evaluations': 0,
+            'refutations': 0
+        }
     
-    def run_discovery_cycle(self) -> Dict:
-        """Run one cycle of discovery attempts."""
+    def run_discovery_cycle(self) -> Optional[Dict]:
+        """Run one cycle of discovery attempt."""
         self.cycle_count += 1
-        cycle_results = {
+        
+        # Select a random explorer
+        explorer = random.choice(self.explorers)
+        
+        # Attempt to generate a conjecture
+        conjecture = explorer.explore(self.kb)
+        
+        if not conjecture:
+            return None
+        
+        self.stats['total_attempts'] += 1
+        self.stats['agent_performance'][explorer.name]['attempts'] += 1
+        
+        # Create discovery record
+        discovery = {
             'cycle': self.cycle_count,
             'timestamp': time.time(),
-            'attempts': [],
-            'discoveries': [],
-            'rejections': []
+            'explorer': explorer.name,
+            'theorem_id': conjecture.id,
+            'statement': conjecture.statement,
+            'field': conjecture.field.value,
+            'status': 'proposed'
         }
         
-        # Shuffle order of explorers
-        random.shuffle(self.explorers)
+        # Naysayer evaluation
+        evaluation = self.naysayer.evaluate_conjecture(conjecture, self.kb)
+        self.stats['agent_performance'][self.naysayer.name]['evaluations'] += 1
         
-        for explorer in self.explorers:
-            # Explorer attempts to make a discovery
-            conjecture = explorer.explore(self.kb)
+        discovery['evaluation'] = evaluation
+        
+        if evaluation['is_valid']:
+            # Check if it's truly novel (not too similar to existing)
+            similar = self.kb.search_similar(conjecture.statement, conjecture.symbolic_form)
             
-            if conjecture:
-                attempt = {
-                    'explorer': explorer.name,
-                    'conjecture_id': conjecture.id,
-                    'statement': conjecture.statement[:100] + "..." if len(conjecture.statement) > 100 else conjecture.statement
-                }
-                cycle_results['attempts'].append(attempt)
+            if len(similar) == 0 or evaluation['confidence'] > 0.7:
+                # Novel discovery!
+                conjecture.is_novel = True
+                self.kb.add_theorem(conjecture)
+                explorer.record_success(conjecture)
                 
-                # Naysayer evaluates the conjecture
-                evaluation = self.naysayer.evaluate(conjecture, self.kb)
+                self.stats['successful_discoveries'] += 1
+                self.stats['novel_theorems'] += 1
+                self.stats['agent_performance'][explorer.name]['discoveries'] += 1
                 
-                if self.verbose:
-                    print(f"\n🔬 {explorer.name} proposes:")
-                    print(f"   {conjecture.statement[:80]}...")
-                    print(f"   Field: {conjecture.field.value}, Difficulty: {conjecture.difficulty.value}")
-                    print(f"   🤔 Naysayer: {evaluation}")
+                discovery['status'] = 'accepted'
+                discovery['novelty'] = True
                 
-                if evaluation.verdict == 'accepted':
-                    # Add to knowledge base
-                    conjecture.is_novel = True
-                    self.kb.add_theorem(conjecture)
-                    explorer.record_success(conjecture)
-                    
-                    cycle_results['discoveries'].append({
-                        'theorem_id': conjecture.id,
-                        'explorer': explorer.name,
-                        'field': conjecture.field.value
-                    })
-                    
-                    self.discovery_history.append({
-                        'cycle': self.cycle_count,
-                        'time': time.time() - self.start_time,
-                        'explorer': explorer.name,
-                        'theorem': conjecture.statement,
-                        'field': conjecture.field.value
-                    })
-                    
-                    if self.verbose:
-                        print(f"   ✅ DISCOVERY ACCEPTED! Added to knowledge base as {conjecture.id}")
-                
-                elif evaluation.verdict == 'rejected':
-                    cycle_results['rejections'].append({
-                        'explorer': explorer.name,
-                        'reason': evaluation.reason,
-                        'evidence': evaluation.evidence
-                    })
-                    
-                    if self.verbose:
-                        print(f"   ❌ REJECTED: {evaluation.reason}")
-                
-                elif evaluation.verdict == 'trivial':
-                    if self.verbose:
-                        print(f"   🤷 TRIVIAL: Not worth recording")
+                print(f"✨ DISCOVERY by {explorer.name}:")
+                print(f"   {conjecture.statement}")
+                print(f"   Field: {conjecture.field.value}, Confidence: {evaluation['confidence']:.1%}")
+            else:
+                # Valid but not novel
+                discovery['status'] = 'redundant'
+                discovery['novelty'] = False
+                print(f"↔️  Redundant theorem by {explorer.name}: {conjecture.statement[:50]}...")
+        else:
+            # Refuted by naysayer
+            self.stats['refuted_conjectures'] += 1
+            self.stats['agent_performance'][explorer.name]['refuted'] += 1
+            self.stats['agent_performance'][self.naysayer.name]['refutations'] += 1
+            
+            discovery['status'] = 'refuted'
+            discovery['refutation'] = evaluation['refutation_reason']
+            
+            print(f"❌ REFUTED by {self.naysayer.name}:")
+            print(f"   Conjecture: {conjecture.statement[:50]}...")
+            print(f"   Reason: {evaluation['refutation_reason']}")
         
-        return cycle_results
+        # Add to timeline
+        self.stats['discovery_timeline'].append(discovery)
+        
+        # Save periodically
+        if self.cycle_count % self.save_interval == 0:
+            self.save_state()
+        
+        return discovery
     
-    def run_simulation(self, cycles: int = 100, save_interval: int = 10):
-        """Run the complete simulation for specified cycles."""
+    def run_simulation(self, duration_seconds: int = 60, max_cycles: int = 1000):
+        """Run the simulation for a specified duration or number of cycles."""
+        print("="*70)
+        print("MATHEMATICAL DISCOVERY SIMULATION".center(70))
+        print("="*70)
+        print(f"Explorers: {len(self.explorers)}")
+        print(f"Knowledge Base: {len(self.kb.theorems)} initial theorems")
+        print(f"Duration: {duration_seconds}s or {max_cycles} cycles")
+        print("="*70 + "\n")
         
-        print(f"\n🚀 Starting simulation for {cycles} cycles...")
-        print("-"*70)
+        end_time = time.time() + duration_seconds
         
-        for i in range(cycles):
-            # Run discovery cycle
-            cycle_results = self.run_discovery_cycle()
+        while time.time() < end_time and self.cycle_count < max_cycles:
+            self.run_discovery_cycle()
             
-            # Periodic status update
-            if (i + 1) % 10 == 0:
-                self.print_status()
-            
-            # Save progress periodically
-            if (i + 1) % save_interval == 0:
-                self.save_state(f"simulation_state_cycle_{i+1}.json")
-            
-            # Small delay to make monitoring easier
+            # Small delay to make output readable
             time.sleep(0.1)
+            
+            # Print periodic statistics
+            if self.cycle_count % 50 == 0:
+                self.print_statistics()
         
-        # Final report
-        self.print_final_report()
-        
-        # Save final state
-        self.save_state("simulation_final.json")
-    
-    def print_status(self):
-        """Print current simulation status."""
-        stats = self.kb.get_statistics()
-        
+        # Final statistics
         print("\n" + "="*70)
-        print(f"STATUS at cycle {self.cycle_count}".center(70))
+        print("SIMULATION COMPLETE".center(70))
         print("="*70)
-        print(f"Knowledge Base: {stats['total_theorems']} theorems ({stats['novel_discoveries']} novel)")
-        print(f"By Field: ", end="")
-        for field, count in stats['by_field'].items():
-            print(f"{field}: {count} ", end="")
-        print()
+        self.print_detailed_statistics()
+        self.save_state()
         
-        # Explorer stats
-        print("\nExplorer Performance:")
-        for explorer in self.explorers:
-            e_stats = explorer.get_stats()
-            print(f"  {explorer.name}: {e_stats['successes']}/{e_stats['attempts']} "
-                  f"(success rate: {e_stats['success_rate']:.1%})")
-        
-        # Naysayer stats
-        n_stats = self.naysayer.get_stats()
-        print(f"\nNaysayer Stats:")
-        print(f"  Evaluated: {n_stats['total_evaluated']}")
-        print(f"  Rejected: {n_stats['rejections']} ({n_stats['rejection_rate']:.1%})")
-        print(f"  Accepted: {n_stats['acceptances']} ({n_stats['acceptance_rate']:.1%})")
-        print(f"  Trivial: {n_stats['trivial']}")
-        print("="*70)
-    
-    def print_final_report(self):
-        """Print comprehensive final report."""
-        print("\n" + "="*70)
-        print("FINAL REPORT".center(70))
-        print("="*70)
-        
+    def print_statistics(self):
+        """Print current statistics."""
         runtime = time.time() - self.start_time
-        print(f"Simulation Runtime: {runtime:.2f} seconds")
-        print(f"Total Cycles: {self.cycle_count}")
-        
-        stats = self.kb.get_statistics()
-        print(f"\nKnowledge Base Growth:")
-        print(f"  Started with: {len([t for t in self.kb.theorems.values() if not t.is_novel])} theorems")
-        print(f"  Discovered: {stats['novel_discoveries']} new theorems")
-        print(f"  Total: {stats['total_theorems']} theorems")
-        
-        # Field distribution
-        print(f"\nDiscoveries by Field:")
-        novel_by_field = {}
-        for theorem in self.kb.get_novel_discoveries():
-            field = theorem.field.value
-            novel_by_field[field] = novel_by_field.get(field, 0) + 1
-        
-        for field, count in novel_by_field.items():
-            print(f"  {field}: {count}")
-        
-        # Top explorers
-        print(f"\nTop Explorers:")
-        explorer_ranking = sorted(self.explorers, 
-                                 key=lambda e: e.get_stats()['successes'], 
-                                 reverse=True)
-        for i, explorer in enumerate(explorer_ranking[:3], 1):
-            stats = explorer.get_stats()
-            print(f"  {i}. {explorer.name}: {stats['successes']} discoveries")
-        
-        # Sample discoveries
-        print(f"\nSample Novel Discoveries:")
-        novel = self.kb.get_novel_discoveries()
-        for theorem in random.sample(novel, min(3, len(novel))):
-            print(f"  • {theorem.statement[:80]}...")
-            print(f"    (by {theorem.discovered_by}, field: {theorem.field.value})")
-        
-        print("="*70)
+        print(f"\n📊 Cycle {self.cycle_count} | Runtime: {runtime:.1f}s")
+        print(f"   Discoveries: {self.stats['successful_discoveries']} | "
+              f"Refuted: {self.stats['refuted_conjectures']} | "
+              f"Novel: {self.stats['novel_theorems']}")
     
-    def save_state(self, filename: str):
-        """Save simulation state to file."""
-        state = {
-            'timestamp': datetime.now().isoformat(),
-            'cycle': self.cycle_count,
-            'runtime': time.time() - self.start_time,
-            'statistics': self.kb.get_statistics(),
-            'discovery_history': self.discovery_history[-50:],  # Last 50 discoveries
-            'explorer_stats': [e.get_stats() for e in self.explorers],
-            'naysayer_stats': self.naysayer.get_stats()
-        }
+    def print_detailed_statistics(self):
+        """Print detailed final statistics."""
+        runtime = time.time() - self.start_time
         
-        with open(filename, 'w') as f:
-            json.dump(state, f, indent=2)
+        print(f"\n📈 FINAL STATISTICS")
+        print(f"   Total Runtime: {runtime:.1f} seconds")
+        print(f"   Total Cycles: {self.cycle_count}")
+        print(f"   Total Attempts: {self.stats['total_attempts']}")
+        print(f"   Successful Discoveries: {self.stats['successful_discoveries']}")
+        print(f"   Novel Theorems: {self.stats['novel_theorems']}")
+        print(f"   Refuted Conjectures: {self.stats['refuted_conjectures']}")
         
-        # Also save knowledge base
-        self.kb.save_to_file(filename.replace('.json', '_kb.json'))
+        if self.stats['total_attempts'] > 0:
+            success_rate = self.stats['successful_discoveries'] / self.stats['total_attempts']
+            print(f"   Success Rate: {success_rate:.1%}")
         
-        if self.verbose:
-            print(f"💾 State saved to {filename}")
+        print(f"\n🏆 AGENT PERFORMANCE:")
+        
+        # Explorer performance
+        explorer_stats = []
+        for explorer in self.explorers:
+            stats = self.stats['agent_performance'][explorer.name]
+            if stats['attempts'] > 0:
+                success_rate = stats['discoveries'] / stats['attempts']
+                explorer_stats.append((explorer.name, stats['discoveries'], success_rate))
+        
+        # Sort by discoveries
+        explorer_stats.sort(key=lambda x: x[1], reverse=True)
+        
+        for name, discoveries, rate in explorer_stats[:5]:  # Top 5
+            print(f"   {name}: {discoveries} discoveries ({rate:.1%} success rate)")
+        
+        # Naysayer performance
+        naysayer_stats = self.stats['agent_performance'][self.naysayer.name]
+        if naysayer_stats['evaluations'] > 0:
+            refutation_rate = naysayer_stats['refutations'] / naysayer_stats['evaluations']
+            print(f"\n   {self.naysayer.name}: {naysayer_stats['refutations']} refutations "
+                  f"({refutation_rate:.1%} refutation rate)")
+        
+        # Knowledge base growth
+        kb_stats = self.kb.get_statistics()
+        print(f"\n📚 KNOWLEDGE BASE:")
+        print(f"   Total Theorems: {kb_stats['total_theorems']}")
+        print(f"   Novel Discoveries: {kb_stats['novel_discoveries']}")
+        
+        print(f"\n   By Field:")
+        for field, count in kb_stats['by_field'].items():
+            if count > 0:
+                print(f"      {field}: {count}")
     
-    def load_state(self, filename: str):
-        """Load simulation state from file."""
-        with open(filename, 'r') as f:
-            state = json.load(f)
+    def save_state(self):
+        """Save simulation state to files."""
+        # Create output directory if it doesn't exist
+        os.makedirs('output', exist_ok=True)
         
-        self.cycle_count = state['cycle']
-        self.discovery_history = state['discovery_history']
+        # Save knowledge base
+        self.kb.save_to_file('output/knowledge_base.json')
         
-        # Load knowledge base
-        kb_file = filename.replace('.json', '_kb.json')
-        self.kb.load_from_file(kb_file)
+        # Save simulation statistics
+        with open('output/simulation_stats.json', 'w') as f:
+            # Prepare stats for JSON serialization
+            stats_to_save = {
+                'timestamp': time.time(),
+                'runtime': time.time() - self.start_time,
+                'cycles': self.cycle_count,
+                'statistics': self.stats,
+                'kb_stats': self.kb.get_statistics()
+            }
+            json.dump(stats_to_save, f, indent=2)
         
-        print(f"📂 State loaded from {filename}")
+        # Save timeline for monitoring
+        with open('output/discovery_timeline.json', 'w') as f:
+            json.dump(self.stats['discovery_timeline'], f, indent=2)
+        
+        print(f"💾 State saved (cycle {self.cycle_count})")
 
 def main():
-    parser = argparse.ArgumentParser(description='Mathematical Discovery Simulation')
-    parser.add_argument('--explorers', type=int, default=3, 
+    parser = argparse.ArgumentParser(description='Run mathematical discovery simulation')
+    parser.add_argument('--explorers', type=int, default=5, 
                        help='Number of explorer agents')
-    parser.add_argument('--cycles', type=int, default=50,
-                       help='Number of discovery cycles')
-    parser.add_argument('--quiet', action='store_true',
-                       help='Run in quiet mode')
-    parser.add_argument('--load', type=str,
-                       help='Load previous simulation state')
+    parser.add_argument('--duration', type=int, default=60,
+                       help='Simulation duration in seconds')
+    parser.add_argument('--cycles', type=int, default=1000,
+                       help='Maximum number of cycles')
+    parser.add_argument('--save-interval', type=int, default=20,
+                       help='Save state every N cycles')
     
     args = parser.parse_args()
     
-    # Create and run simulation
     sim = DiscoverySimulation(
         num_explorers=args.explorers,
-        verbose=not args.quiet
+        save_interval=args.save_interval
     )
     
-    if args.load:
-        sim.load_state(args.load)
-    
-    try:
-        sim.run_simulation(cycles=args.cycles)
-    except KeyboardInterrupt:
-        print("\n\n⚠️ Simulation interrupted by user")
-        sim.print_final_report()
-        sim.save_state("simulation_interrupted.json")
+    sim.run_simulation(
+        duration_seconds=args.duration,
+        max_cycles=args.cycles
+    )
 
 if __name__ == "__main__":
     main()

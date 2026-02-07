@@ -12,10 +12,10 @@
         }
         
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
             color: #333;
+            min-height: 100vh;
         }
         
         .container {
@@ -25,233 +25,281 @@
         }
         
         header {
-            text-align: center;
-            padding: 30px 0;
-            color: white;
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        h1 {
-            font-size: 2.5em;
+        header h1 {
+            color: #1e3c72;
+            font-size: 2em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
-        .subtitle {
-            font-size: 1.2em;
-            opacity: 0.9;
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
         }
         
-        .dashboard {
+        .status-item {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            padding: 10px;
+            background: #f0f4f8;
+            border-radius: 5px;
+        }
+        
+        .status-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2a5298;
+        }
+        
+        .status-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-top: 30px;
+            margin-bottom: 20px;
         }
         
         .panel {
             background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        
-        .panel.full-width {
-            grid-column: 1 / -1;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
         .panel h2 {
-            color: #2a5298;
+            color: #1e3c72;
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid #e0e0e0;
         }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-        }
-        
-        .stat-label {
-            font-size: 0.9em;
-            opacity: 0.9;
-            margin-top: 5px;
-        }
-        
-        .discovery-feed {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
         .discovery-item {
-            padding: 12px;
-            margin: 8px 0;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border-left: 4px solid #667eea;
-            transition: transform 0.2s;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+            background: #f9fff9;
+            animation: slideIn 0.5s;
         }
         
-        .discovery-item:hover {
-            transform: translateX(5px);
-            background: #f0f0f0;
+        .discovery-item.refuted {
+            border-left-color: #f44336;
+            background: #fff9f9;
         }
         
-        .discovery-header {
+        .discovery-item.redundant {
+            border-left-color: #ff9800;
+            background: #fffbf5;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .theorem-statement {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #333;
+            margin: 5px 0;
+            padding: 5px;
+            background: #f5f5f5;
+            border-radius: 3px;
+        }
+        
+        .meta-info {
+            font-size: 12px;
+            color: #666;
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        
-        .discovery-statement {
-            font-family: 'Courier New', monospace;
-            color: #495057;
-            padding: 8px;
-            background: white;
-            border-radius: 4px;
             margin-top: 5px;
         }
         
-        .explorer-name {
-            color: #667eea;
-            font-weight: bold;
+        .agent-list {
+            list-style: none;
         }
         
-        .field-tag {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-        
-        .rejection-item {
-            padding: 10px;
-            margin: 8px 0;
-            background: #ffebee;
-            border-radius: 6px;
-            border-left: 4px solid #f44336;
-        }
-        
-        .rejection-reason {
-            color: #c62828;
-            font-weight: bold;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 30px;
-            background: #e0e0e0;
-            border-radius: 15px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transition: width 0.5s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .leaderboard {
-            margin-top: 20px;
-        }
-        
-        .leaderboard-item {
+        .agent-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px;
+            padding: 8px;
             margin: 5px 0;
             background: #f5f5f5;
             border-radius: 5px;
         }
         
-        .leaderboard-item.gold {
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-        }
-        
-        .leaderboard-item.silver {
-            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
-        }
-        
-        .leaderboard-item.bronze {
-            background: linear-gradient(135deg, #cd7f32, #e4a853);
-        }
-        
-        .naysayer-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .naysayer-stat {
-            text-align: center;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 5px;
-        }
-        
-        .naysayer-stat.rejected {
-            background: #ffebee;
-            color: #c62828;
-        }
-        
-        .naysayer-stat.accepted {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .naysayer-stat.trivial {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-        
-        #simulationStatus {
-            text-align: center;
-            padding: 10px;
-            background: #e3f2fd;
-            border-radius: 5px;
-            margin: 10px 0;
+        .agent-name {
             font-weight: bold;
-            color: #1976d2;
+            color: #2a5298;
         }
         
-        .chart-container {
-            margin: 20px 0;
-            height: 200px;
+        .agent-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stat-badge {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .stat-badge.success {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .stat-badge.attempts {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .stat-badge.refuted {
+            background: #f44336;
+            color: white;
+        }
+        
+        .timeline-container {
+            grid-column: span 2;
+        }
+        
+        .timeline {
+            display: flex;
+            overflow-x: auto;
+            padding: 20px 0;
             position: relative;
         }
         
-        canvas {
-            max-width: 100%;
+        .timeline-item {
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+            padding: 10px;
         }
         
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
+        .timeline-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+        }
+        
+        .timeline-dot.discovery {
+            background: #4CAF50;
+        }
+        
+        .timeline-dot.refutation {
+            background: #f44336;
+        }
+        
+        .timeline-dot.redundant {
+            background: #ff9800;
+        }
+        
+        .field-chart {
+            display: flex;
+            height: 200px;
+            align-items: flex-end;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .bar {
+            width: 60px;
+            background: linear-gradient(to top, #4CAF50, #8BC34A);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            transition: height 0.3s;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .naysayer-panel {
+            background: #fff3e0;
+        }
+        
+        .naysayer-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(to right, #f44336, #ff9800, #4CAF50);
+            transition: width 0.3s;
         }
     </style>
 </head>
@@ -259,270 +307,288 @@
     <div class="container">
         <header>
             <h1>🔬 Mathematical Discovery Monitor</h1>
-            <p class="subtitle">Watch AI agents discover new theorems in real-time</p>
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-value" id="cycleCount">0</div>
+                    <div class="status-label">Cycles</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="discoveryCount">0</div>
+                    <div class="status-label">Discoveries</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="novelCount">0</div>
+                    <div class="status-label">Novel Theorems</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="refutedCount">0</div>
+                    <div class="status-label">Refuted</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="successRate">0%</div>
+                    <div class="status-label">Success Rate</div>
+                </div>
+            </div>
         </header>
         
-        <div id="simulationStatus">⏸️ Waiting for simulation data...</div>
-        
-        <div class="dashboard">
-            <!-- Statistics Panel -->
+        <div class="main-content">
             <div class="panel">
-                <h2>📊 Discovery Statistics</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalTheorems">0</div>
-                        <div class="stat-label">Total Theorems</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="novelDiscoveries">0</div>
-                        <div class="stat-label">Novel Discoveries</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="currentCycle">0</div>
-                        <div class="stat-label">Current Cycle</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="successRate">0%</div>
-                        <div class="stat-label">Success Rate</div>
-                    </div>
+                <h2>🎯 Recent Discoveries</h2>
+                <div id="recentDiscoveries">
+                    <div class="loading">Waiting for discoveries...</div>
                 </div>
-                
-                <h3>Discovery Rate</h3>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="discoveryProgress" style="width: 0%">
-                        <span id="progressText">0%</span>
+            </div>
+            
+            <div class="panel">
+                <h2>🤖 Explorer Agents</h2>
+                <ul class="agent-list" id="agentList">
+                    <li class="agent-item">
+                        <span class="agent-name">Loading agents...</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="panel naysayer-panel">
+                <h2>👁️ Naysayer Analysis</h2>
+                <div id="naysayerStats">
+                    <div class="naysayer-stat">
+                        <span>Evaluations:</span>
+                        <strong id="nayEvaluations">0</strong>
+                    </div>
+                    <div class="naysayer-stat">
+                        <span>Refutations:</span>
+                        <strong id="nayRefutations">0</strong>
+                    </div>
+                    <div class="naysayer-stat">
+                        <span>Refutation Rate:</span>
+                        <strong id="nayRate">0%</strong>
+                    </div>
+                    <div class="naysayer-stat">
+                        <span>Average Confidence:</span>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidenceBar" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Explorer Leaderboard -->
             <div class="panel">
-                <h2>🏆 Explorer Leaderboard</h2>
-                <div class="leaderboard" id="leaderboard">
-                    <!-- Populated dynamically -->
-                </div>
-                
-                <h3 style="margin-top: 20px;">🤔 Naysayer Performance</h3>
-                <div class="naysayer-stats">
-                    <div class="naysayer-stat rejected">
-                        <div style="font-size: 1.5em; font-weight: bold;" id="naysayerRejected">0</div>
-                        <div>Rejected</div>
+                <h2>📊 Discoveries by Field</h2>
+                <div class="field-chart" id="fieldChart">
+                    <div class="bar" style="height: 10px;">
+                        <div class="bar-value">0</div>
+                        <div class="bar-label">Algebra</div>
                     </div>
-                    <div class="naysayer-stat accepted">
-                        <div style="font-size: 1.5em; font-weight: bold;" id="naysayerAccepted">0</div>
-                        <div>Accepted</div>
+                    <div class="bar" style="height: 10px;">
+                        <div class="bar-value">0</div>
+                        <div class="bar-label">Trigonometry</div>
                     </div>
-                    <div class="naysayer-stat trivial">
-                        <div style="font-size: 1.5em; font-weight: bold;" id="naysayerTrivial">0</div>
-                        <div>Trivial</div>
+                    <div class="bar" style="height: 10px;">
+                        <div class="bar-value">0</div>
+                        <div class="bar-label">Geometry</div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Recent Discoveries -->
-            <div class="panel">
-                <h2>✨ Recent Discoveries</h2>
-                <div class="discovery-feed" id="discoveryFeed">
-                    <!-- Populated dynamically -->
-                </div>
-            </div>
-            
-            <!-- Recent Rejections -->
-            <div class="panel">
-                <h2>❌ Recent Rejections</h2>
-                <div class="discovery-feed" id="rejectionFeed">
-                    <!-- Populated dynamically -->
-                </div>
-            </div>
-            
-            <!-- Field Distribution -->
-            <div class="panel full-width">
-                <h2>📈 Discovery Distribution by Field</h2>
-                <div class="chart-container">
-                    <canvas id="fieldChart"></canvas>
+                    <div class="bar" style="height: 10px;">
+                        <div class="bar-value">0</div>
+                        <div class="bar-label">Combinatorics</div>
+                    </div>
                 </div>
             </div>
         </div>
+        
+        <div class="panel timeline-container">
+            <h2>📈 Discovery Timeline</h2>
+            <div class="timeline" id="timeline">
+                <div class="loading">Timeline will appear here...</div>
+            </div>
+        </div>
+        
+        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
     </div>
     
     <script>
-        // Global state
-        let simulationData = null;
-        let discoveries = [];
-        let rejections = [];
+        let lastUpdate = 0;
+        let autoRefresh = true;
         
-        // Update dashboard with new data
-        function updateDashboard(data) {
-            // Update statistics
-            document.getElementById('totalTheorems').textContent = 
-                data.statistics?.total_theorems || 0;
-            document.getElementById('novelDiscoveries').textContent = 
-                data.statistics?.novel_discoveries || 0;
-            document.getElementById('currentCycle').textContent = 
-                data.cycle || 0;
-            
-            // Calculate success rate
-            let totalAttempts = 0;
-            let totalSuccesses = 0;
-            
-            if (data.explorer_stats) {
-                data.explorer_stats.forEach(explorer => {
-                    totalAttempts += explorer.attempts;
-                    totalSuccesses += explorer.successes;
-                });
+        async function loadData() {
+            try {
+                // Load simulation statistics
+                const statsResponse = await fetch('output/simulation_stats.json');
+                if (statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    updateStatistics(stats);
+                }
+                
+                // Load discovery timeline
+                const timelineResponse = await fetch('output/discovery_timeline.json');
+                if (timelineResponse.ok) {
+                    const timeline = await timelineResponse.json();
+                    updateTimeline(timeline);
+                    updateRecentDiscoveries(timeline);
+                }
+                
+                // Load knowledge base for field distribution
+                const kbResponse = await fetch('output/knowledge_base.json');
+                if (kbResponse.ok) {
+                    const kb = await kbResponse.json();
+                    updateFieldChart(kb.statistics.by_field);
+                }
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
             }
+        }
+        
+        function updateStatistics(stats) {
+            document.getElementById('cycleCount').textContent = stats.cycles || 0;
+            document.getElementById('discoveryCount').textContent = stats.statistics.successful_discoveries || 0;
+            document.getElementById('novelCount').textContent = stats.statistics.novel_theorems || 0;
+            document.getElementById('refutedCount').textContent = stats.statistics.refuted_conjectures || 0;
             
-            const successRate = totalAttempts > 0 ? 
-                (totalSuccesses / totalAttempts * 100).toFixed(1) : 0;
+            const successRate = stats.statistics.total_attempts > 0 
+                ? (stats.statistics.successful_discoveries / stats.statistics.total_attempts * 100).toFixed(1)
+                : 0;
             document.getElementById('successRate').textContent = successRate + '%';
             
-            // Update progress bar
-            const progress = Math.min(100, (data.cycle / 100) * 100);
-            document.getElementById('discoveryProgress').style.width = progress + '%';
-            document.getElementById('progressText').textContent = 
-                Math.round(progress) + '% Complete';
-            
-            // Update leaderboard
-            updateLeaderboard(data.explorer_stats);
+            // Update agent list
+            updateAgentList(stats.statistics.agent_performance);
             
             // Update naysayer stats
-            if (data.naysayer_stats) {
-                document.getElementById('naysayerRejected').textContent = 
-                    data.naysayer_stats.rejections;
-                document.getElementById('naysayerAccepted').textContent = 
-                    data.naysayer_stats.acceptances;
-                document.getElementById('naysayerTrivial').textContent = 
-                    data.naysayer_stats.trivial;
+            const naysayerStats = stats.statistics.agent_performance['The Skeptic'];
+            if (naysayerStats) {
+                document.getElementById('nayEvaluations').textContent = naysayerStats.evaluations || 0;
+                document.getElementById('nayRefutations').textContent = naysayerStats.refutations || 0;
+                
+                const refutationRate = naysayerStats.evaluations > 0
+                    ? (naysayerStats.refutations / naysayerStats.evaluations * 100).toFixed(1)
+                    : 0;
+                document.getElementById('nayRate').textContent = refutationRate + '%';
+                
+                // Update confidence bar (inverse of refutation rate shows confidence in valid theorems)
+                const confidence = 100 - parseFloat(refutationRate);
+                document.getElementById('confidenceBar').style.width = confidence + '%';
             }
-            
-            // Update discovery feed
-            if (data.discovery_history) {
-                updateDiscoveryFeed(data.discovery_history);
-            }
-            
-            // Update field distribution
-            updateFieldChart(data.statistics?.by_field);
-            
-            // Update status
-            document.getElementById('simulationStatus').innerHTML = 
-                '🟢 Simulation Running - Cycle ' + (data.cycle || 0);
         }
         
-        function updateLeaderboard(explorerStats) {
-            if (!explorerStats) return;
+        function updateAgentList(agentPerformance) {
+            const agentList = document.getElementById('agentList');
+            agentList.innerHTML = '';
             
-            const leaderboard = document.getElementById('leaderboard');
+            // Filter and sort explorer agents
+            const explorers = Object.entries(agentPerformance)
+                .filter(([name, _]) => name !== 'The Skeptic')
+                .sort((a, b) => (b[1].discoveries || 0) - (a[1].discoveries || 0));
             
-            // Sort by successes
-            const sorted = [...explorerStats].sort((a, b) => b.successes - a.successes);
-            
-            leaderboard.innerHTML = sorted.slice(0, 5).map((explorer, index) => {
-                const medalClass = index === 0 ? 'gold' : 
-                                  index === 1 ? 'silver' : 
-                                  index === 2 ? 'bronze' : '';
-                
-                const medal = index === 0 ? '🥇' : 
-                             index === 1 ? '🥈' : 
-                             index === 2 ? '🥉' : `${index + 1}.`;
-                
-                return `
-                    <div class="leaderboard-item ${medalClass}">
-                        <span>${medal} ${explorer.name}</span>
-                        <span>${explorer.successes} discoveries (${(explorer.success_rate * 100).toFixed(1)}%)</span>
+            for (const [name, stats] of explorers) {
+                const li = document.createElement('li');
+                li.className = 'agent-item';
+                li.innerHTML = `
+                    <span class="agent-name">${name}</span>
+                    <div class="agent-stats">
+                        <span class="stat-badge success">${stats.discoveries || 0} discoveries</span>
+                        <span class="stat-badge attempts">${stats.attempts || 0} attempts</span>
+                        <span class="stat-badge refuted">${stats.refuted || 0} refuted</span>
                     </div>
                 `;
-            }).join('');
-        }
-        
-        function updateDiscoveryFeed(history) {
-            const feed = document.getElementById('discoveryFeed');
-            
-            // Get last 5 discoveries
-            const recent = history.slice(-5).reverse();
-            
-            feed.innerHTML = recent.map(discovery => `
-                <div class="discovery-item">
-                    <div class="discovery-header">
-                        <span class="explorer-name">${discovery.explorer}</span>
-                        <span class="field-tag">${discovery.field}</span>
-                    </div>
-                    <div class="discovery-statement">
-                        ${discovery.theorem}
-                    </div>
-                    <small style="color: #666;">Cycle ${discovery.cycle}</small>
-                </div>
-            `).join('');
-        }
-        
-        function updateFieldChart(fieldData) {
-            if (!fieldData) return;
-            
-            const canvas = document.getElementById('fieldChart');
-            const ctx = canvas.getContext('2d');
-            
-            // Simple bar chart
-            const fields = Object.keys(fieldData);
-            const values = Object.values(fieldData);
-            const maxValue = Math.max(...values, 1);
-            
-            canvas.width = canvas.offsetWidth;
-            canvas.height = 200;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const barWidth = canvas.width / fields.length;
-            const colors = ['#667eea', '#764ba2', '#f06292', '#4fc3f7', '#81c784', '#ffb74d'];
-            
-            fields.forEach((field, index) => {
-                const barHeight = (values[index] / maxValue) * 150;
-                const x = index * barWidth + 10;
-                const y = canvas.height - barHeight - 30;
-                
-                // Draw bar
-                ctx.fillStyle = colors[index % colors.length];
-                ctx.fillRect(x, y, barWidth - 20, barHeight);
-                
-                // Draw label
-                ctx.fillStyle = '#333';
-                ctx.font = '12px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(field, x + (barWidth - 20) / 2, canvas.height - 10);
-                
-                // Draw value
-                ctx.fillText(values[index], x + (barWidth - 20) / 2, y - 5);
-            });
-        }
-        
-        // Poll for updates
-        async function pollForUpdates() {
-            try {
-                // Try to load the latest simulation state
-                const response = await fetch('simulation_state_cycle_10.json');
-                if (response.ok) {
-                    const data = await response.json();
-                    updateDashboard(data);
-                }
-            } catch (error) {
-                // Try alternate file names
-                try {
-                    const response = await fetch('simulation_final.json');
-                    if (response.ok) {
-                        const data = await response.json();
-                        updateDashboard(data);
-                        document.getElementById('simulationStatus').innerHTML = 
-                            '✅ Simulation Complete';
-                    }
-                } catch (e) {
-                    console.log('Waiting for simulation data...');
-                }
+                agentList.appendChild(li);
             }
         }
         
-        // Poll every 2 seconds
-        setInterval(pollForUpdates, 2000);
+        function updateRecentDiscoveries(timeline) {
+            const container = document.getElementById('recentDiscoveries');
+            container.innerHTML = '';
+            
+            // Get last 5 discoveries
+            const recent = timeline.slice(-5).reverse();
+            
+            if (recent.length === 0) {
+                container.innerHTML = '<div class="loading">No discoveries yet...</div>';
+                return;
+            }
+            
+            for (const discovery of recent) {
+                const div = document.createElement('div');
+                div.className = `discovery-item ${discovery.status}`;
+                
+                const statusIcon = discovery.status === 'accepted' ? '✅' 
+                    : discovery.status === 'refuted' ? '❌' : '↔️';
+                
+                div.innerHTML = `
+                    <div class="theorem-statement">${statusIcon} ${discovery.statement}</div>
+                    <div class="meta-info">
+                        <span>${discovery.explorer}</span>
+                        <span>${discovery.field}</span>
+                        <span>Cycle ${discovery.cycle}</span>
+                    </div>
+                    ${discovery.refutation ? `<div style="color: #f44336; font-size: 12px; margin-top: 5px;">Refutation: ${discovery.refutation}</div>` : ''}
+                `;
+                
+                container.appendChild(div);
+            }
+        }
+        
+        function updateTimeline(timeline) {
+            const container = document.getElementById('timeline');
+            container.innerHTML = '';
+            
+            // Group by status for summary
+            const summary = timeline.reduce((acc, item) => {
+                acc[item.status] = (acc[item.status] || 0) + 1;
+                return acc;
+            }, {});
+            
+            // Show last 20 items in timeline
+            const recentItems = timeline.slice(-20);
+            
+            for (const item of recentItems) {
+                const div = document.createElement('div');
+                div.className = 'timeline-item';
+                
+                const dotClass = item.status === 'accepted' ? 'discovery' 
+                    : item.status === 'refuted' ? 'refutation' : 'redundant';
+                
+                div.innerHTML = `
+                    <div class="timeline-dot ${dotClass}"></div>
+                    <div style="font-size: 12px;">${item.explorer}</div>
+                    <div style="font-size: 10px; color: #666;">Cycle ${item.cycle}</div>
+                `;
+                
+                container.appendChild(div);
+            }
+        }
+        
+        function updateFieldChart(byField) {
+            const container = document.getElementById('fieldChart');
+            container.innerHTML = '';
+            
+            const maxValue = Math.max(...Object.values(byField), 1);
+            
+            for (const [field, count] of Object.entries(byField)) {
+                const div = document.createElement('div');
+                div.className = 'bar';
+                div.style.height = `${(count / maxValue) * 180}px`;
+                
+                div.innerHTML = `
+                    <div class="bar-value">${count}</div>
+                    <div class="bar-label">${field.replace('_', ' ')}</div>
+                `;
+                
+                container.appendChild(div);
+            }
+        }
+        
+        function refreshData() {
+            loadData();
+        }
+        
+        // Auto-refresh every 2 seconds
+        setInterval(() => {
+            if (autoRefresh) {
+                loadData();
+            }
+        }, 2000);
         
         // Initial load
-        pollForUpdates();
+        loadData();
     </script>
 </body>
 </html>

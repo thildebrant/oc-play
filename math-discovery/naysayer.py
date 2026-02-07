@@ -6,361 +6,338 @@ import sympy as sp
 from sympy import symbols, simplify, expand, factor, solve, Eq
 from sympy import sin, cos, tan, log, exp, sqrt, pi, E, I
 import random
-import numpy as np
-from typing import Optional, List, Tuple
-from knowledge_base import MathTheorem, KnowledgeBase
+from typing import Optional, List, Tuple, Dict
+from knowledge_base import MathTheorem, KnowledgeBase, MathField
+import time
 
-class NaysayerResponse:
-    """Response from the naysayer agent."""
+class RefutationMethod:
+    """Base class for refutation methods."""
     
-    def __init__(self, verdict: str, reason: str, evidence: Optional[str] = None):
-        self.verdict = verdict  # 'rejected', 'accepted', 'trivial'
-        self.reason = reason
-        self.evidence = evidence
+    def attempt_refutation(self, theorem: MathTheorem, kb: KnowledgeBase) -> Tuple[bool, Optional[str]]:
+        """
+        Attempt to refute a theorem.
+        Returns (is_refuted, explanation)
+        """
+        raise NotImplementedError
+
+class CounterexampleSearch(RefutationMethod):
+    """Search for numerical counterexamples."""
+    
+    def attempt_refutation(self, theorem: MathTheorem, kb: KnowledgeBase) -> Tuple[bool, Optional[str]]:
+        if not theorem.symbolic_form:
+            return False, None
         
-    def __str__(self):
-        return f"{self.verdict}: {self.reason}" + (f" [{self.evidence}]" if self.evidence else "")
+        try:
+            # Parse the symbolic form
+            expr = sp.sympify(theorem.symbolic_form)
+            variables = expr.free_symbols
+            
+            # Generate test values
+            test_cases = self._generate_test_cases(len(variables))
+            
+            for test_values in test_cases:
+                # Create substitution dictionary
+                subs_dict = {}
+                for i, var in enumerate(variables):
+                    subs_dict[var] = test_values[i]
+                
+                # Evaluate the expression
+                try:
+                    result = expr.subs(subs_dict)
+                    result_float = complex(result)
+                    
+                    # Check if the identity holds (should be close to 0)
+                    if abs(result_float) > 1e-8:
+                        counterexample = ", ".join([f"{var}={val}" for var, val in subs_dict.items()])
+                        return True, f"Counterexample found: {counterexample} gives {result_float}"
+                except:
+                    # Skip if evaluation fails (e.g., division by zero)
+                    continue
+            
+            return False, None
+            
+        except Exception as e:
+            return False, None
+    
+    def _generate_test_cases(self, num_vars: int) -> List[Tuple]:
+        """Generate test cases for counterexample search."""
+        test_values = [
+            0, 1, -1, 2, -2, 0.5, -0.5, 
+            sp.pi, -sp.pi, sp.E, 
+            complex(1, 1), complex(0, 1)
+        ]
+        
+        # Random sampling approach
+        test_cases = []
+        for _ in range(100):  # Try 100 random combinations
+            case = []
+            for _ in range(num_vars):
+                case.append(random.choice(test_values))
+            test_cases.append(tuple(case))
+        
+        # Also include edge cases
+        edge_cases = [
+            tuple([0] * num_vars),
+            tuple([1] * num_vars),
+            tuple([-1] * num_vars),
+            tuple([sp.pi] * num_vars),
+        ]
+        test_cases.extend(edge_cases)
+        
+        return test_cases
+
+class PriorArtDetection(RefutationMethod):
+    """Check if the theorem already exists or is trivially derived."""
+    
+    def attempt_refutation(self, theorem: MathTheorem, kb: KnowledgeBase) -> Tuple[bool, Optional[str]]:
+        # Search for similar theorems
+        similar = kb.search_similar(theorem.statement, theorem.symbolic_form)
+        
+        if similar:
+            # Check for exact matches
+            for existing in similar:
+                if theorem.symbolic_form and existing.symbolic_form:
+                    try:
+                        new_expr = sp.sympify(theorem.symbolic_form)
+                        exist_expr = sp.sympify(existing.symbolic_form)
+                        
+                        # Check if they're equivalent
+                        if simplify(new_expr - exist_expr) == 0:
+                            return True, f"This is equivalent to existing theorem {existing.id}: {existing.statement}"
+                    except:
+                        pass
+            
+            # Check if it's a trivial variation
+            if len(similar) > 0:
+                similarity_score = self._calculate_similarity(theorem, similar[0])
+                if similarity_score > 0.8:
+                    return True, f"This appears to be a trivial variation of {similar[0].id}"
+        
+        return False, None
+    
+    def _calculate_similarity(self, theorem1: MathTheorem, theorem2: MathTheorem) -> float:
+        """Calculate similarity between two theorems."""
+        # Simple word overlap similarity
+        words1 = set(theorem1.statement.lower().split())
+        words2 = set(theorem2.statement.lower().split())
+        
+        if not words1 or not words2:
+            return 0.0
+        
+        intersection = len(words1 & words2)
+        union = len(words1 | words2)
+        
+        return intersection / union if union > 0 else 0.0
+
+class TrivialityDetection(RefutationMethod):
+    """Detect if a theorem is trivial or tautological."""
+    
+    def attempt_refutation(self, theorem: MathTheorem, kb: KnowledgeBase) -> Tuple[bool, Optional[str]]:
+        if not theorem.symbolic_form:
+            return False, None
+        
+        try:
+            expr = sp.sympify(theorem.symbolic_form)
+            
+            # Check if it simplifies to 0 (tautology)
+            simplified = simplify(expr)
+            if simplified == 0:
+                return True, "This is a tautology (always true by definition)"
+            
+            # Check if both sides are identical
+            if '=' in theorem.statement:
+                parts = theorem.statement.split('=')
+                if len(parts) == 2:
+                    left = parts[0].strip()
+                    right = parts[1].strip()
+                    if left == right:
+                        return True, "Both sides of the equation are identical"
+            
+            # Check if it's just a restatement with different notation
+            expanded = expand(expr)
+            if expanded == 0:
+                return True, "This reduces to 0 = 0 when expanded"
+            
+            return False, None
+            
+        except:
+            return False, None
+
+class AlgebraicVerification(RefutationMethod):
+    """Verify if the theorem is actually correct using symbolic manipulation."""
+    
+    def attempt_refutation(self, theorem: MathTheorem, kb: KnowledgeBase) -> Tuple[bool, Optional[str]]:
+        if not theorem.symbolic_form:
+            return False, None
+        
+        try:
+            expr = sp.sympify(theorem.symbolic_form)
+            
+            # Try different simplification approaches
+            methods = [
+                ('simplify', simplify),
+                ('expand', expand),
+                ('factor', factor),
+                ('trigsimp', sp.trigsimp),
+            ]
+            
+            for method_name, method in methods:
+                try:
+                    result = method(expr)
+                    
+                    # If it doesn't simplify to 0, the identity is false
+                    if result != 0 and result != False:
+                        # Double-check with numerical evaluation
+                        variables = expr.free_symbols
+                        if variables:
+                            # Test with specific values
+                            test_dict = {var: 1.5 for var in variables}
+                            numerical_result = float(expr.subs(test_dict))
+                            
+                            if abs(numerical_result) > 1e-8:
+                                return True, f"Algebraic verification failed: {method_name} gives {result}"
+                except:
+                    continue
+            
+            return False, None
+            
+        except Exception as e:
+            return False, None
+
+class SpecialCaseAnalysis(RefutationMethod):
+    """Check special cases that might invalidate the theorem."""
+    
+    def attempt_refutation(self, theorem: MathTheorem, kb: KnowledgeBase) -> Tuple[bool, Optional[str]]:
+        if not theorem.symbolic_form:
+            return False, None
+        
+        try:
+            expr = sp.sympify(theorem.symbolic_form)
+            variables = list(expr.free_symbols)
+            
+            # Check division by zero cases
+            if '/' in theorem.statement or 'tan' in theorem.statement or 'sec' in theorem.statement:
+                # Check if there are values that make denominators zero
+                for var in variables:
+                    # Set variable to 0 and check
+                    test_expr = expr.subs(var, 0)
+                    if sp.zoo in sp.preorder_traversal(test_expr):  # zoo is complex infinity
+                        return True, f"Division by zero when {var} = 0"
+            
+            # Check domain restrictions for logs and square roots
+            if 'log' in theorem.statement or 'sqrt' in theorem.statement:
+                # Test with negative values
+                for var in variables:
+                    test_expr = expr.subs(var, -1)
+                    if test_expr.has(sp.zoo) or test_expr.has(sp.nan):
+                        return True, f"Domain error: invalid for {var} < 0"
+            
+            # Check trigonometric singularities
+            if any(func in theorem.statement for func in ['tan', 'cot', 'sec', 'csc']):
+                critical_values = [0, sp.pi/2, sp.pi, 3*sp.pi/2]
+                for var in variables:
+                    for val in critical_values:
+                        test_expr = expr.subs(var, val)
+                        if test_expr.has(sp.zoo):
+                            return True, f"Singularity at {var} = {val}"
+            
+            return False, None
+            
+        except:
+            return False, None
 
 class NaysayerAgent:
-    """Skeptical agent that tries to disprove or invalidate conjectures."""
+    """The skeptical agent that tries to disprove new conjectures."""
     
     def __init__(self, name: str = "Naysayer"):
         self.name = name
-        self.rejections = 0
-        self.acceptances = 0
-        self.trivial_count = 0
-        self.evaluation_log = []
-        
-    def evaluate(self, conjecture: MathTheorem, kb: KnowledgeBase) -> NaysayerResponse:
-        """Evaluate a conjecture for validity and novelty."""
-        
-        # Check 1: Is it already known?
-        similar = kb.search_similar(conjecture.statement, conjecture.symbolic_form)
-        if similar:
-            self.rejections += 1
-            self.evaluation_log.append({
-                'conjecture': conjecture.id,
-                'verdict': 'rejected',
-                'reason': 'already_known'
-            })
-            return NaysayerResponse(
-                'rejected',
-                f"Already known or trivial variation",
-                f"Similar to {similar[0].id}: {similar[0].statement}"
-            )
-        
-        # Check 2: Is it mathematically valid?
-        if conjecture.symbolic_form:
-            validity = self._check_validity(conjecture.symbolic_form)
-            if not validity[0]:
-                self.rejections += 1
-                self.evaluation_log.append({
-                    'conjecture': conjecture.id,
-                    'verdict': 'rejected',
-                    'reason': 'invalid'
-                })
-                return NaysayerResponse(
-                    'rejected',
-                    f"Mathematically invalid",
-                    validity[1]
-                )
-        
-        # Check 3: Can we find a counterexample?
-        counterexample = self._find_counterexample(conjecture)
-        if counterexample:
-            self.rejections += 1
-            self.evaluation_log.append({
-                'conjecture': conjecture.id,
-                'verdict': 'rejected',
-                'reason': 'counterexample'
-            })
-            return NaysayerResponse(
-                'rejected',
-                f"Counterexample found",
-                counterexample
-            )
-        
-        # Check 4: Is it trivial?
-        if self._is_trivial(conjecture):
-            self.trivial_count += 1
-            self.evaluation_log.append({
-                'conjecture': conjecture.id,
-                'verdict': 'trivial',
-                'reason': 'too_simple'
-            })
-            return NaysayerResponse(
-                'trivial',
-                f"Too trivial or obvious",
-                "Statement reduces to known simple form"
-            )
-        
-        # Check 5: Does it contradict known theorems?
-        contradiction = self._check_contradiction(conjecture, kb)
-        if contradiction:
-            self.rejections += 1
-            self.evaluation_log.append({
-                'conjecture': conjecture.id,
-                'verdict': 'rejected',
-                'reason': 'contradiction'
-            })
-            return NaysayerResponse(
-                'rejected',
-                f"Contradicts known theorem",
-                contradiction
-            )
-        
-        # If we couldn't disprove it, grudgingly accept it
-        self.acceptances += 1
-        self.evaluation_log.append({
-            'conjecture': conjecture.id,
-            'verdict': 'accepted',
-            'reason': 'no_issues_found'
-        })
-        
-        return NaysayerResponse(
-            'accepted',
-            f"Could not disprove (yet)",
-            "Passed all validation checks"
-        )
-    
-    def _check_validity(self, symbolic_form: str) -> Tuple[bool, str]:
-        """Check if the symbolic form is mathematically valid."""
-        try:
-            expr = sp.sympify(symbolic_form)
-            
-            # Check if it's supposed to be an identity (equals zero)
-            if isinstance(expr, sp.Basic):
-                # Try to simplify
-                simplified = simplify(expr)
-                
-                # For identities, simplified should be 0
-                if simplified == 0:
-                    return (True, "Identity verified")
-                
-                # Try harder with trigsimp for trig identities
-                if any(isinstance(arg, (sp.sin, sp.cos, sp.tan)) for arg in expr.atoms(sp.Function)):
-                    trig_simplified = sp.trigsimp(expr)
-                    if trig_simplified == 0:
-                        return (True, "Trigonometric identity verified")
-                
-                # Check with random values
-                vars = list(expr.free_symbols)
-                if vars:
-                    for _ in range(10):
-                        values = {v: random.uniform(-10, 10) for v in vars}
-                        result = expr.subs(values)
-                        if abs(complex(result)) > 0.0001:
-                            return (False, f"Not an identity: evaluates to {result} with {values}")
-                    
-                    return (True, "Numerically verified")
-                
-                return (False, f"Expression simplifies to {simplified}, not 0")
-            
-        except Exception as e:
-            return (False, f"Could not parse expression: {str(e)}")
-        
-        return (True, "Could not falsify")
-    
-    def _find_counterexample(self, conjecture: MathTheorem) -> Optional[str]:
-        """Try to find a counterexample to the conjecture."""
-        
-        if not conjecture.symbolic_form:
-            return None
-        
-        try:
-            expr = sp.sympify(conjecture.symbolic_form)
-            vars = list(expr.free_symbols)
-            
-            if not vars:
-                return None
-            
-            # Try specific edge cases
-            test_cases = [
-                {v: 0 for v in vars},
-                {v: 1 for v in vars},
-                {v: -1 for v in vars},
-                {v: 2 for v in vars},
-            ]
-            
-            # Add random cases
-            for _ in range(20):
-                test_cases.append({v: random.uniform(-100, 100) for v in vars})
-            
-            for values in test_cases:
-                try:
-                    result = expr.subs(values)
-                    
-                    # Handle complex results
-                    if result.is_complex:
-                        result_value = complex(result)
-                    else:
-                        result_value = float(result)
-                    
-                    # Check if it's supposed to be zero (identity)
-                    if abs(result_value) > 0.001:
-                        vals_str = ", ".join(f"{k}={v:.3f}" for k, v in values.items())
-                        return f"With {vals_str}: expression = {result_value:.6f} ≠ 0"
-                        
-                except:
-                    pass
-            
-            # Try to find values that make denominators zero (invalid domains)
-            for atom in expr.atoms():
-                if atom.is_Pow and atom.exp < 0:
-                    # Found a denominator
-                    base = atom.base
-                    try:
-                        # Solve for when denominator is zero
-                        solutions = solve(base, vars[0] if vars else None)
-                        if solutions:
-                            return f"Undefined when {vars[0]} = {solutions[0]}"
-                    except:
-                        pass
-                        
-        except Exception as e:
-            pass
-        
-        return None
-    
-    def _is_trivial(self, conjecture: MathTheorem) -> bool:
-        """Check if the conjecture is too trivial."""
-        
-        # Check statement length and complexity
-        if len(conjecture.statement) < 10:
-            return True
-        
-        # Check if it's just a rearrangement
-        if conjecture.symbolic_form:
-            try:
-                expr = sp.sympify(conjecture.symbolic_form)
-                
-                # If it's just a=a or similar
-                if expr == 0 and len(str(expr)) < 5:
-                    return True
-                
-                # Check complexity
-                complexity = len(expr.atoms())
-                if complexity < 3:
-                    return True
-                    
-            except:
-                pass
-        
-        # Check for obvious statements
-        trivial_patterns = [
-            'a = a',
-            'a + 0 = a',
-            'a * 1 = a',
-            'a - a = 0',
+        self.methods = [
+            CounterexampleSearch(),
+            PriorArtDetection(),
+            TrivialityDetection(),
+            AlgebraicVerification(),
+            SpecialCaseAnalysis()
         ]
+        self.refutations = []
+        self.attempts = 0
+        self.successful_refutations = 0
         
-        for pattern in trivial_patterns:
-            if pattern in conjecture.statement.lower():
-                return True
+    def evaluate_conjecture(self, theorem: MathTheorem, kb: KnowledgeBase) -> Dict:
+        """
+        Evaluate a conjecture and attempt to refute it.
+        Returns evaluation results.
+        """
+        self.attempts += 1
+        evaluation = {
+            'theorem_id': theorem.id,
+            'timestamp': time.time(),
+            'is_valid': True,
+            'refutation_reason': None,
+            'refutation_method': None,
+            'confidence': 0.0
+        }
         
-        return False
+        # Try each refutation method
+        for method in self.methods:
+            method_name = method.__class__.__name__
+            
+            try:
+                is_refuted, explanation = method.attempt_refutation(theorem, kb)
+                
+                if is_refuted:
+                    evaluation['is_valid'] = False
+                    evaluation['refutation_reason'] = explanation
+                    evaluation['refutation_method'] = method_name
+                    evaluation['confidence'] = 0.9  # High confidence in refutation
+                    
+                    self.successful_refutations += 1
+                    self.refutations.append(theorem.id)
+                    
+                    # Mark theorem as refuted
+                    theorem.is_novel = False
+                    theorem.counterexample = explanation
+                    
+                    return evaluation
+            except Exception as e:
+                # Continue with other methods if one fails
+                continue
+        
+        # If no refutation found, check how confident we are in validity
+        evaluation['confidence'] = self._calculate_validity_confidence(theorem, kb)
+        
+        return evaluation
     
-    def _check_contradiction(self, conjecture: MathTheorem, kb: KnowledgeBase) -> Optional[str]:
-        """Check if the conjecture contradicts known theorems."""
+    def _calculate_validity_confidence(self, theorem: MathTheorem, kb: KnowledgeBase) -> float:
+        """Calculate confidence that the theorem is valid."""
+        confidence = 0.5  # Base confidence
         
-        # This is a simplified check
-        # In a real system, this would use theorem provers
+        # Higher confidence if it's related to known theorems
+        if theorem.related_to:
+            confidence += 0.1 * len(theorem.related_to)
         
-        if not conjecture.symbolic_form:
-            return None
+        # Higher confidence for simpler theorems
+        if theorem.statement.count('+') + theorem.statement.count('*') < 5:
+            confidence += 0.1
         
-        try:
-            expr = sp.sympify(conjecture.symbolic_form)
-            
-            # Check against fundamental laws
-            vars = list(expr.free_symbols)
-            
-            # Check commutativity if applicable
-            if len(vars) >= 2:
-                a, b = vars[:2]
-                # If the expression claims a*b != b*a for commutative operations
-                if 'a*b' in str(expr) and 'b*a' in str(expr):
-                    expr_swapped = expr.subs([(a, b), (b, a)])
-                    if simplify(expr_swapped + expr) != 0:
-                        return "Violates commutativity of multiplication"
-            
-            # Check for division by zero claims
-            if '1/0' in conjecture.statement or 'divide by zero' in conjecture.statement.lower():
-                return "Division by zero is undefined"
-            
-            # Check for sqrt of negative numbers (in real domain)
-            if 'sqrt' in str(expr) and not any(isinstance(s, sp.I) for s in expr.atoms()):
-                # Test with negative values
-                for v in vars:
-                    test_expr = expr.subs(v, -1)
-                    if test_expr.has(sp.sqrt):
-                        return "Square root of negative number in real domain"
-            
-        except:
-            pass
+        # Lower confidence for very complex expressions
+        if len(theorem.statement) > 100:
+            confidence -= 0.2
         
-        return None
+        # Higher confidence if similar theorems exist and are valid
+        similar = kb.search_similar(theorem.statement, theorem.symbolic_form)
+        if similar:
+            valid_similar = [t for t in similar if t.is_novel or t.discovered_by == "Classical"]
+            if valid_similar:
+                confidence += 0.15
+        
+        return min(1.0, max(0.0, confidence))
     
-    def get_stats(self) -> dict:
+    def get_stats(self) -> Dict:
         """Get naysayer statistics."""
-        total = self.rejections + self.acceptances + self.trivial_count
-        
         return {
             'name': self.name,
-            'total_evaluated': total,
-            'rejections': self.rejections,
-            'acceptances': self.acceptances,
-            'trivial': self.trivial_count,
-            'rejection_rate': self.rejections / max(1, total),
-            'acceptance_rate': self.acceptances / max(1, total),
-            'recent_evaluations': self.evaluation_log[-10:]  # Last 10 evaluations
+            'attempts': self.attempts,
+            'successful_refutations': self.successful_refutations,
+            'refutation_rate': self.successful_refutations / max(1, self.attempts),
+            'refuted_theorems': self.refutations
         }
-    
-    def generate_critique(self, conjecture: MathTheorem) -> str:
-        """Generate a detailed critique of the conjecture."""
-        
-        critiques = []
-        
-        # Analyze structure
-        if len(conjecture.statement) < 20:
-            critiques.append("Statement is too short and likely trivial")
-        
-        # Check for common patterns
-        if '=' in conjecture.statement:
-            parts = conjecture.statement.split('=')
-            if len(parts) == 2 and parts[0].strip() == parts[1].strip():
-                critiques.append("This is a tautology (a=a)")
-        
-        # Analyze mathematical depth
-        if conjecture.symbolic_form:
-            try:
-                expr = sp.sympify(conjecture.symbolic_form)
-                depth = self._calculate_depth(expr)
-                
-                if depth < 2:
-                    critiques.append("Mathematical expression lacks depth")
-                elif depth > 10:
-                    critiques.append("Expression might be unnecessarily complex")
-                    
-            except:
-                critiques.append("Could not parse symbolic form for analysis")
-        
-        # Check field appropriateness
-        if 'sin' in conjecture.statement or 'cos' in conjecture.statement:
-            if conjecture.field != "trigonometry":
-                critiques.append(f"Should be categorized as trigonometry, not {conjecture.field}")
-        
-        if not critiques:
-            critiques.append("The conjecture appears structurally sound")
-        
-        return " | ".join(critiques)
-    
-    def _calculate_depth(self, expr) -> int:
-        """Calculate the depth of a mathematical expression."""
-        if isinstance(expr, (int, float, sp.Symbol)):
-            return 0
-        elif isinstance(expr, sp.Basic):
-            if expr.args:
-                return 1 + max(self._calculate_depth(arg) for arg in expr.args)
-            return 1
-        return 0
