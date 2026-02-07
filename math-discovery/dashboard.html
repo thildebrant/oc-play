@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematical Discovery Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .panel.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .panel h2 {
+            color: #2a5298;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .discovery-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .discovery-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+        
+        .discovery-item:hover {
+            transform: translateX(5px);
+            background: #f0f0f0;
+        }
+        
+        .discovery-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .discovery-statement {
+            font-family: 'Courier New', monospace;
+            color: #495057;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        
+        .explorer-name {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .field-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .rejection-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: #ffebee;
+            border-radius: 6px;
+            border-left: 4px solid #f44336;
+        }
+        
+        .rejection-reason {
+            color: #c62828;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .leaderboard {
+            margin-top: 20px;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        
+        .leaderboard-item.gold {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+        }
+        
+        .leaderboard-item.silver {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+        }
+        
+        .leaderboard-item.bronze {
+            background: linear-gradient(135deg, #cd7f32, #e4a853);
+        }
+        
+        .naysayer-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .naysayer-stat {
+            text-align: center;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        
+        .naysayer-stat.rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .naysayer-stat.accepted {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .naysayer-stat.trivial {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        #simulationStatus {
+            text-align: center;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .chart-container {
+            margin: 20px 0;
+            height: 200px;
+            position: relative;
+        }
+        
+        canvas {
+            max-width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔬 Mathematical Discovery Monitor</h1>
+            <p class="subtitle">Watch AI agents discover new theorems in real-time</p>
+        </header>
+        
+        <div id="simulationStatus">⏸️ Waiting for simulation data...</div>
+        
+        <div class="dashboard">
+            <!-- Statistics Panel -->
+            <div class="panel">
+                <h2>📊 Discovery Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalTheorems">0</div>
+                        <div class="stat-label">Total Theorems</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="novelDiscoveries">0</div>
+                        <div class="stat-label">Novel Discoveries</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentCycle">0</div>
+                        <div class="stat-label">Current Cycle</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="successRate">0%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+                
+                <h3>Discovery Rate</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="discoveryProgress" style="width: 0%">
+                        <span id="progressText">0%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Explorer Leaderboard -->
+            <div class="panel">
+                <h2>🏆 Explorer Leaderboard</h2>
+                <div class="leaderboard" id="leaderboard">
+                    <!-- Populated dynamically -->
+                </div>
+                
+                <h3 style="margin-top: 20px;">🤔 Naysayer Performance</h3>
+                <div class="naysayer-stats">
+                    <div class="naysayer-stat rejected">
+                        <div style="font-size: 1.5em; font-weight: bold;" id="naysayerRejected">0</div>
+                        <div>Rejected</div>
+                    </div>
+                    <div class="naysayer-stat accepted">
+                        <div style="font-size: 1.5em; font-weight: bold;" id="naysayerAccepted">0</div>
+                        <div>Accepted</div>
+                    </div>
+                    <div class="naysayer-stat trivial">
+                        <div style="font-size: 1.5em; font-weight: bold;" id="naysayerTrivial">0</div>
+                        <div>Trivial</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Discoveries -->
+            <div class="panel">
+                <h2>✨ Recent Discoveries</h2>
+                <div class="discovery-feed" id="discoveryFeed">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            
+            <!-- Recent Rejections -->
+            <div class="panel">
+                <h2>❌ Recent Rejections</h2>
+                <div class="discovery-feed" id="rejectionFeed">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            
+            <!-- Field Distribution -->
+            <div class="panel full-width">
+                <h2>📈 Discovery Distribution by Field</h2>
+                <div class="chart-container">
+                    <canvas id="fieldChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global state
+        let simulationData = null;
+        let discoveries = [];
+        let rejections = [];
+        
+        // Update dashboard with new data
+        function updateDashboard(data) {
+            // Update statistics
+            document.getElementById('totalTheorems').textContent = 
+                data.statistics?.total_theorems || 0;
+            document.getElementById('novelDiscoveries').textContent = 
+                data.statistics?.novel_discoveries || 0;
+            document.getElementById('currentCycle').textContent = 
+                data.cycle || 0;
+            
+            // Calculate success rate
+            let totalAttempts = 0;
+            let totalSuccesses = 0;
+            
+            if (data.explorer_stats) {
+                data.explorer_stats.forEach(explorer => {
+                    totalAttempts += explorer.attempts;
+                    totalSuccesses += explorer.successes;
+                });
+            }
+            
+            const successRate = totalAttempts > 0 ? 
+                (totalSuccesses / totalAttempts * 100).toFixed(1) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            // Update progress bar
+            const progress = Math.min(100, (data.cycle / 100) * 100);
+            document.getElementById('discoveryProgress').style.width = progress + '%';
+            document.getElementById('progressText').textContent = 
+                Math.round(progress) + '% Complete';
+            
+            // Update leaderboard
+            updateLeaderboard(data.explorer_stats);
+            
+            // Update naysayer stats
+            if (data.naysayer_stats) {
+                document.getElementById('naysayerRejected').textContent = 
+                    data.naysayer_stats.rejections;
+                document.getElementById('naysayerAccepted').textContent = 
+                    data.naysayer_stats.acceptances;
+                document.getElementById('naysayerTrivial').textContent = 
+                    data.naysayer_stats.trivial;
+            }
+            
+            // Update discovery feed
+            if (data.discovery_history) {
+                updateDiscoveryFeed(data.discovery_history);
+            }
+            
+            // Update field distribution
+            updateFieldChart(data.statistics?.by_field);
+            
+            // Update status
+            document.getElementById('simulationStatus').innerHTML = 
+                '🟢 Simulation Running - Cycle ' + (data.cycle || 0);
+        }
+        
+        function updateLeaderboard(explorerStats) {
+            if (!explorerStats) return;
+            
+            const leaderboard = document.getElementById('leaderboard');
+            
+            // Sort by successes
+            const sorted = [...explorerStats].sort((a, b) => b.successes - a.successes);
+            
+            leaderboard.innerHTML = sorted.slice(0, 5).map((explorer, index) => {
+                const medalClass = index === 0 ? 'gold' : 
+                                  index === 1 ? 'silver' : 
+                                  index === 2 ? 'bronze' : '';
+                
+                const medal = index === 0 ? '🥇' : 
+                             index === 1 ? '🥈' : 
+                             index === 2 ? '🥉' : `${index + 1}.`;
+                
+                return `
+                    <div class="leaderboard-item ${medalClass}">
+                        <span>${medal} ${explorer.name}</span>
+                        <span>${explorer.successes} discoveries (${(explorer.success_rate * 100).toFixed(1)}%)</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateDiscoveryFeed(history) {
+            const feed = document.getElementById('discoveryFeed');
+            
+            // Get last 5 discoveries
+            const recent = history.slice(-5).reverse();
+            
+            feed.innerHTML = recent.map(discovery => `
+                <div class="discovery-item">
+                    <div class="discovery-header">
+                        <span class="explorer-name">${discovery.explorer}</span>
+                        <span class="field-tag">${discovery.field}</span>
+                    </div>
+                    <div class="discovery-statement">
+                        ${discovery.theorem}
+                    </div>
+                    <small style="color: #666;">Cycle ${discovery.cycle}</small>
+                </div>
+            `).join('');
+        }
+        
+        function updateFieldChart(fieldData) {
+            if (!fieldData) return;
+            
+            const canvas = document.getElementById('fieldChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Simple bar chart
+            const fields = Object.keys(fieldData);
+            const values = Object.values(fieldData);
+            const maxValue = Math.max(...values, 1);
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 200;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const barWidth = canvas.width / fields.length;
+            const colors = ['#667eea', '#764ba2', '#f06292', '#4fc3f7', '#81c784', '#ffb74d'];
+            
+            fields.forEach((field, index) => {
+                const barHeight = (values[index] / maxValue) * 150;
+                const x = index * barWidth + 10;
+                const y = canvas.height - barHeight - 30;
+                
+                // Draw bar
+                ctx.fillStyle = colors[index % colors.length];
+                ctx.fillRect(x, y, barWidth - 20, barHeight);
+                
+                // Draw label
+                ctx.fillStyle = '#333';
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(field, x + (barWidth - 20) / 2, canvas.height - 10);
+                
+                // Draw value
+                ctx.fillText(values[index], x + (barWidth - 20) / 2, y - 5);
+            });
+        }
+        
+        // Poll for updates
+        async function pollForUpdates() {
+            try {
+                // Try to load the latest simulation state
+                const response = await fetch('simulation_state_cycle_10.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDashboard(data);
+                }
+            } catch (error) {
+                // Try alternate file names
+                try {
+                    const response = await fetch('simulation_final.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        updateDashboard(data);
+                        document.getElementById('simulationStatus').innerHTML = 
+                            '✅ Simulation Complete';
+                    }
+                } catch (e) {
+                    console.log('Waiting for simulation data...');
+                }
+            }
+        }
+        
+        // Poll every 2 seconds
+        setInterval(pollForUpdates, 2000);
+        
+        // Initial load
+        pollForUpdates();
+    </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+{
+  "timestamp": "2026-02-07T17:43:57.678033",
+  "cycle": 10,
+  "runtime": 8.149197101593018,
+  "statistics": {
+    "total_theorems": 25,
+    "novel_discoveries": 2,
+    "by_field": {
+      "algebra": 14,
+      "trigonometry": 10,
+      "geometry": 0,
+      "calculus": 0,
+      "number_theory": 0,
+      "combinatorics": 1
+    },
+    "by_difficulty": {
+      "1": 0,
+      "2": 23,
+      "3": 2,
+      "4": 0
+    },
+    "discovery_rate": [
+      {
+        "window_seconds": 3600,
+        "discoveries": 2
+      },
+      {
+        "window_seconds": 86400,
+        "discoveries": 2
+      },
+      {
+        "window_seconds": 604800,
+        "discoveries": 2
+      }
+    ]
+  },
+  "discovery_history": [
+    {
+      "cycle": 1,
+      "time": 0.020566940307617188,
+      "explorer": "Gauss_2",
+      "theorem": "For positive a,b,c: (a+b+c)/3 >= (abc)^(1/3)",
+      "field": "algebra"
+    },
+    {
+      "cycle": 4,
+      "time": 2.317887306213379,
+      "explorer": "Ramanujan_3",
+      "theorem": "C(n,k) + C(n,k+1) = C(n+1,k+1)",
+      "field": "combinatorics"
+    }
+  ],
+  "explorer_stats": [
+    {
+      "name": "Ramanujan_3",
+      "attempts": 10,
+      "successes": 1,
+      "success_rate": 0.1,
+      "discoveries": [
+        "pat_1770504231846734"
+      ]
+    },
+    {
+      "name": "Fermat_4",
+      "attempts": 10,
+      "successes": 0,
+      "success_rate": 0.0,
+      "discoveries": []
+    },
+    {
+      "name": "Euler_1",
+      "attempts": 10,
+      "successes": 0,
+      "success_rate": 0.0,
+      "discoveries": []
+    },
+    {
+      "name": "Gauss_2",
+      "attempts": 10,
+      "successes": 1,
+      "success_rate": 0.1,
+      "discoveries": [
+        "sym_1770504229549552"
+      ]
+    }
+  ],
+  "naysayer_stats": {
+    "name": "The Grand Skeptic",
+    "total_evaluated": 17,
+    "rejections": 15,
+    "acceptances": 2,
+    "trivial": 0,
+    "rejection_rate": 0.8823529411764706,
+    "acceptance_rate": 0.11764705882352941,
+    "recent_evaluations": [
+      {
+        "conjecture": "trig_1770504233199460",
+        "verdict": "rejected",
+        "reason": "already_known"
+      },
+      {
+        "conjecture": "pat_1770504233745933",
+        "verdict": "rejected",
+        "reason": "already_known"
+      },
+      {
+        "conjecture": "pat_1770504234326692",
+        "verdict": "rejected",
+        "reason": "already_known"
+      },
+      {
+        "conjecture": "pat_1770504234806260",
+        "verdict": "rejected",
+        "reason": "already_known"
+      },
+      {
+        "conjecture": "pat_1770504235379819",
+        "verdict": "rejected",
+        "reason": "already_known"
+      },
+      {
+        "conjecture": "pat_1770504235863737",
+        "verdict": "rejected",
+        "reason": "already_known"
+      },
+      {
+        "conjecture": "pat_1770504236443838",
+        "verdict": "rejected",
+        "reason": "already_known"
+      },
+      {
+        "conjecture": "trig_1770504236551653",
+        "verdict": "rejected",
+        "reason": "already_known"
+      },
+      {
+        "conjecture": "pat_1770504237105338",
+        "verdict": "rejected",
+        "reason": "already_known"
+      },
+      {
+        "conjecture": "pat_1770504237677621",
+        "verdict": "rejected",
+        "reason": "already_known"
+      }
+    ]
+  }
+}
