@@ -1,0 +1,130 @@
+{
+  "timestamp": 1770505427.335778,
+  "runtime": 109.50751566886902,
+  "cycles": 6,
+  "statistics": {
+    "total_attempts": 3,
+    "successful_discoveries": 1,
+    "refuted_conjectures": 2,
+    "novel_theorems": 1,
+    "discovery_timeline": [
+      {
+        "cycle": 3,
+        "timestamp": 1770505318.0294785,
+        "explorer": "Gauss-2",
+        "theorem_id": "pat_1770505318029420",
+        "statement": "C(n,k) + C(n,k+1) = C(n+1,k+1)",
+        "field": "combinatorics",
+        "status": "accepted",
+        "evaluation": {
+          "theorem_id": "pat_1770505318029420",
+          "timestamp": 1770505318.0294917,
+          "is_valid": true,
+          "refutation_reason": null,
+          "refutation_method": null,
+          "confidence": 0.6
+        },
+        "novelty": true
+      },
+      {
+        "cycle": 4,
+        "timestamp": 1770505318.156842,
+        "explorer": "Euler-1",
+        "theorem_id": "pat_1770505318156835",
+        "statement": "Sum of first n squares: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+        "field": "combinatorics",
+        "status": "refuted",
+        "evaluation": {
+          "theorem_id": "pat_1770505318156835",
+          "timestamp": 1770505318.1568449,
+          "is_valid": false,
+          "refutation_reason": "This is equivalent to existing theorem alg_001: (a+b)^2 = a^2 + 2*a*b + b^2",
+          "refutation_method": "PriorArtDetection",
+          "confidence": 0.9
+        },
+        "refutation": "This is equivalent to existing theorem alg_001: (a+b)^2 = a^2 + 2*a*b + b^2"
+      },
+      {
+        "cycle": 6,
+        "timestamp": 1770505372.3118725,
+        "explorer": "Ramanujan-3",
+        "theorem_id": "pat_1770505372311857",
+        "statement": "Sum of first n squares: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+        "field": "combinatorics",
+        "status": "refuted",
+        "evaluation": {
+          "theorem_id": "pat_1770505372311857",
+          "timestamp": 1770505372.311877,
+          "is_valid": false,
+          "refutation_reason": "This is equivalent to existing theorem alg_001: (a+b)^2 = a^2 + 2*a*b + b^2",
+          "refutation_method": "PriorArtDetection",
+          "confidence": 0.9
+        },
+        "refutation": "This is equivalent to existing theorem alg_001: (a+b)^2 = a^2 + 2*a*b + b^2"
+      }
+    ],
+    "agent_performance": {
+      "Euler-1": {
+        "attempts": 1,
+        "discoveries": 0,
+        "refuted": 1
+      },
+      "Gauss-2": {
+        "attempts": 1,
+        "discoveries": 1,
+        "refuted": 0
+      },
+      "Ramanujan-3": {
+        "attempts": 1,
+        "discoveries": 0,
+        "refuted": 1
+      },
+      "Erdos-4": {
+        "attempts": 0,
+        "discoveries": 0,
+        "refuted": 0
+      },
+      "Noether-5": {
+        "attempts": 0,
+        "discoveries": 0,
+        "refuted": 0
+      },
+      "The Skeptic": {
+        "evaluations": 3,
+        "refutations": 2
+      }
+    }
+  },
+  "kb_stats": {
+    "total_theorems": 24,
+    "novel_discoveries": 1,
+    "by_field": {
+      "algebra": 13,
+      "trigonometry": 10,
+      "geometry": 0,
+      "calculus": 0,
+      "number_theory": 0,
+      "combinatorics": 1
+    },
+    "by_difficulty": {
+      "1": 0,
+      "2": 23,
+      "3": 1,
+      "4": 0
+    },
+    "discovery_rate": [
+      {
+        "window_seconds": 3600,
+        "discoveries": 1
+      },
+      {
+        "window_seconds": 86400,
+        "discoveries": 1
+      },
+      {
+        "window_seconds": 604800,
+        "discoveries": 1
+      }
+    ]
+  }
+}

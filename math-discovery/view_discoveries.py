@@ -1,90 +1,133 @@
 #!/usr/bin/env python3
 """
-View discoveries from the Mathematical Discovery Simulator
+View accumulated mathematical discoveries across all sessions
 """
 
 import json
-import sys
-from knowledge_base import MathField, Difficulty
+import os
+from datetime import datetime
 
-def view_discoveries(filename="simulation_final.json"):
-    """Display discovered theorems from simulation."""
+def view_discoveries():
+    """Display accumulated discoveries and session history."""
     
-    # Load simulation state
-    with open(filename, 'r') as f:
-        state = json.load(f)
+    print("="*70)
+    print("MATHEMATICAL DISCOVERY ARCHIVE".center(70))
+    print("="*70)
     
     # Load knowledge base
-    kb_file = filename.replace('.json', '_kb.json')
-    with open(kb_file, 'r') as f:
-        kb_data = json.load(f)
-    
-    print("="*80)
-    print("MATHEMATICAL DISCOVERIES".center(80))
-    print("="*80)
-    
-    # Summary statistics
-    print(f"\n📊 Summary Statistics:")
-    print(f"  Total theorems: {state['statistics']['total_theorems']}")
-    print(f"  Novel discoveries: {state['statistics']['novel_discoveries']}")
-    print(f"  Simulation runtime: {state['runtime']:.2f} seconds")
-    print(f"  Total cycles: {state['cycle']}")
-    
-    # Field distribution
-    print(f"\n🎯 Discoveries by Field:")
-    for field, count in state['statistics']['by_field'].items():
-        print(f"  {field}: {count}")
-    
-    # Explorer performance
-    print(f"\n🏆 Explorer Performance:")
-    explorers = sorted(state['explorer_stats'], 
-                      key=lambda x: x['successes'], reverse=True)
-    for i, explorer in enumerate(explorers, 1):
-        success_rate = explorer['success_rate'] * 100
-        print(f"  {i}. {explorer['name']}: {explorer['successes']} discoveries "
-              f"({success_rate:.1f}% success rate)")
-    
-    # Naysayer statistics
-    naysayer = state['naysayer_stats']
-    print(f"\n🤔 Naysayer Statistics:")
-    print(f"  Total evaluated: {naysayer['total_evaluated']}")
-    print(f"  Rejected: {naysayer['rejections']} ({naysayer['rejection_rate']*100:.1f}%)")
-    print(f"  Accepted: {naysayer['acceptances']} ({naysayer['acceptance_rate']*100:.1f}%)")
-    print(f"  Trivial: {naysayer['trivial']}")
-    
-    # Novel theorems
-    print(f"\n✨ Novel Discoveries:")
-    print("-"*80)
-    
-    novel_theorems = [t for t in kb_data['theorems'] if t['is_novel']]
-    
-    if not novel_theorems:
-        print("  No novel theorems discovered in this simulation.")
+    kb_file = 'output/knowledge_base.json'
+    if os.path.exists(kb_file):
+        with open(kb_file, 'r') as f:
+            kb = json.load(f)
+        
+        print(f"\n📚 KNOWLEDGE BASE")
+        print(f"   Total Theorems: {len(kb['theorems'])}")
+        
+        # Count novel discoveries
+        novel_count = sum(1 for t in kb['theorems'] if t.get('is_novel', False))
+        classical_count = len(kb['theorems']) - novel_count
+        
+        print(f"   Classical (Initial): {classical_count}")
+        print(f"   Novel Discoveries: {novel_count}")
+        
+        # Show statistics by field
+        if 'statistics' in kb:
+            print(f"\n   By Field:")
+            for field, count in kb['statistics']['by_field'].items():
+                if count > 0:
+                    print(f"      {field}: {count}")
+        
+        # Show recent novel discoveries
+        novel_theorems = [t for t in kb['theorems'] if t.get('is_novel', False)]
+        if novel_theorems:
+            # Sort by timestamp
+            novel_theorems.sort(key=lambda t: t.get('timestamp', 0), reverse=True)
+            
+            print(f"\n💡 RECENT NOVEL DISCOVERIES:")
+            for theorem in novel_theorems[:10]:  # Show up to 10
+                timestamp = theorem.get('timestamp', 0)
+                date_str = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M') if timestamp > 0 else 'Unknown'
+                print(f"\n   📝 {theorem['statement']}")
+                print(f"      Discovered by: {theorem.get('discovered_by', 'Unknown')}")
+                print(f"      Field: {theorem.get('field', 'Unknown')}")
+                print(f"      Time: {date_str}")
+                if theorem.get('proof_sketch'):
+                    print(f"      Proof: {theorem['proof_sketch']}")
     else:
-        for theorem in novel_theorems:
-            print(f"\n📌 {theorem['id']}")
-            print(f"  Statement: {theorem['statement']}")
-            print(f"  Field: {theorem['field']}")
-            print(f"  Discovered by: {theorem['discovered_by']}")
-            if theorem.get('proof_sketch'):
-                print(f"  Proof: {theorem['proof_sketch']}")
-            if theorem.get('related_to'):
-                print(f"  Related to: {', '.join(theorem['related_to'])}")
+        print("\n❌ No knowledge base found. Run the simulation first!")
     
-    # Discovery timeline
-    if state['discovery_history']:
-        print(f"\n📅 Discovery Timeline:")
-        print("-"*80)
-        for discovery in state['discovery_history']:
-            time_min = discovery['time'] / 60
-            print(f"  Cycle {discovery['cycle']} ({time_min:.1f} min): "
-                  f"{discovery['explorer']} discovered:")
-            print(f"    {discovery['theorem'][:100]}...")
+    # Load session history
+    history_file = 'output/discovery_history.jsonl'
+    if os.path.exists(history_file):
+        print(f"\n📊 SESSION HISTORY")
+        print("-" * 70)
+        
+        sessions = []
+        with open(history_file, 'r') as f:
+            for line in f:
+                if line.strip():
+                    sessions.append(json.loads(line))
+        
+        if sessions:
+            # Show summary statistics
+            total_discoveries = sum(s.get('discoveries', 0) for s in sessions)
+            total_novel = sum(s.get('novel', 0) for s in sessions)
+            total_refuted = sum(s.get('refuted', 0) for s in sessions)
+            total_cycles = sum(s.get('cycles', 0) for s in sessions)
+            total_duration = sum(s.get('duration', 0) for s in sessions)
+            
+            print(f"   Total Sessions: {len(sessions)}")
+            print(f"   Total Runtime: {total_duration:.1f} seconds")
+            print(f"   Total Cycles: {total_cycles}")
+            print(f"   Total Discoveries: {total_discoveries}")
+            print(f"   Total Novel: {total_novel}")
+            print(f"   Total Refuted: {total_refuted}")
+            
+            # Show recent sessions
+            print(f"\n   Recent Sessions:")
+            for session in sessions[-5:]:  # Last 5 sessions
+                timestamp = session.get('timestamp', 0)
+                date_str = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+                duration = session.get('duration', 0)
+                discoveries = session.get('discoveries', 0)
+                novel = session.get('novel', 0)
+                kb_size = session.get('total_kb_size', 0)
+                
+                print(f"\n   🕒 {date_str}")
+                print(f"      Duration: {duration:.1f}s, Discoveries: {discoveries}, Novel: {novel}")
+                print(f"      KB Size After: {kb_size} theorems")
+        else:
+            print("   No sessions recorded yet")
     
-    print("\n" + "="*80)
-    print("End of Report")
-    print("="*80)
+    # Check for specific interesting patterns
+    if os.path.exists(kb_file):
+        with open(kb_file, 'r') as f:
+            kb = json.load(f)
+        
+        # Look for theorems with high difficulty
+        advanced_theorems = [t for t in kb['theorems'] 
+                            if t.get('difficulty', 0) >= 3 and t.get('is_novel', False)]
+        
+        if advanced_theorems:
+            print(f"\n🎓 ADVANCED DISCOVERIES (Difficulty ≥ 3):")
+            for theorem in advanced_theorems[:5]:
+                print(f"   • {theorem['statement'][:80]}...")
+        
+        # Look for theorems that relate to multiple others
+        connected_theorems = [t for t in kb['theorems'] 
+                             if t.get('related_to') and len(t['related_to']) > 1]
+        
+        if connected_theorems:
+            print(f"\n🔗 HIGHLY CONNECTED THEOREMS:")
+            for theorem in connected_theorems[:5]:
+                related_count = len(theorem.get('related_to', []))
+                print(f"   • {theorem['statement'][:60]}...")
+                print(f"     (Connected to {related_count} other theorems)")
+
+    print("\n" + "="*70)
+    print("\nTip: Run 'python3 discovery_sim.py' to continue discovering!")
+    print("     Add '--fresh-start' to begin with a clean knowledge base.")
+    print("     Use 'python3 -m http.server 8080' to view the dashboard.")
 
 if __name__ == "__main__":
-    filename = sys.argv[1] if len(sys.argv) > 1 else "simulation_final.json"
-    view_discoveries(filename)
+    view_discoveries()

@@ -1,0 +1,56 @@
+[
+  {
+    "cycle": 3,
+    "timestamp": 1770505318.0294785,
+    "explorer": "Gauss-2",
+    "theorem_id": "pat_1770505318029420",
+    "statement": "C(n,k) + C(n,k+1) = C(n+1,k+1)",
+    "field": "combinatorics",
+    "status": "accepted",
+    "evaluation": {
+      "theorem_id": "pat_1770505318029420",
+      "timestamp": 1770505318.0294917,
+      "is_valid": true,
+      "refutation_reason": null,
+      "refutation_method": null,
+      "confidence": 0.6
+    },
+    "novelty": true
+  },
+  {
+    "cycle": 4,
+    "timestamp": 1770505318.156842,
+    "explorer": "Euler-1",
+    "theorem_id": "pat_1770505318156835",
+    "statement": "Sum of first n squares: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+    "field": "combinatorics",
+    "status": "refuted",
+    "evaluation": {
+      "theorem_id": "pat_1770505318156835",
+      "timestamp": 1770505318.1568449,
+      "is_valid": false,
+      "refutation_reason": "This is equivalent to existing theorem alg_001: (a+b)^2 = a^2 + 2*a*b + b^2",
+      "refutation_method": "PriorArtDetection",
+      "confidence": 0.9
+    },
+    "refutation": "This is equivalent to existing theorem alg_001: (a+b)^2 = a^2 + 2*a*b + b^2"
+  },
+  {
+    "cycle": 6,
+    "timestamp": 1770505372.3118725,
+    "explorer": "Ramanujan-3",
+    "theorem_id": "pat_1770505372311857",
+    "statement": "Sum of first n squares: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+    "field": "combinatorics",
+    "status": "refuted",
+    "evaluation": {
+      "theorem_id": "pat_1770505372311857",
+      "timestamp": 1770505372.311877,
+      "is_valid": false,
+      "refutation_reason": "This is equivalent to existing theorem alg_001: (a+b)^2 = a^2 + 2*a*b + b^2",
+      "refutation_method": "PriorArtDetection",
+      "confidence": 0.9
+    },
+    "refutation": "This is equivalent to existing theorem alg_001: (a+b)^2 = a^2 + 2*a*b + b^2"
+  }
+]

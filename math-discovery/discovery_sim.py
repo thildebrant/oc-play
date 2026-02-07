@@ -17,8 +17,21 @@ import os
 class DiscoverySimulation:
     """Main simulation engine for mathematical discovery."""
     
-    def __init__(self, num_explorers: int = 3, save_interval: int = 10):
+    def __init__(self, num_explorers: int = 3, save_interval: int = 10, 
+                 load_previous: bool = True, knowledge_file: str = 'output/knowledge_base.json'):
         self.kb = KnowledgeBase()
+        
+        # Load previous discoveries if requested and file exists
+        self.knowledge_file = knowledge_file
+        if load_previous and os.path.exists(knowledge_file):
+            try:
+                self.kb.load_from_file(knowledge_file)
+                print(f"📚 Loaded {len(self.kb.theorems)} theorems from previous runs")
+                print(f"   Including {len(self.kb.get_novel_discoveries())} novel discoveries")
+            except Exception as e:
+                print(f"⚠️  Could not load previous knowledge: {e}")
+                print("   Starting with fresh knowledge base")
+        
         self.naysayer = NaysayerAgent("The Skeptic")
         
         # Create explorer agents with different personalities
@@ -44,7 +57,9 @@ class DiscoverySimulation:
             'refuted_conjectures': 0,
             'novel_theorems': 0,
             'discovery_timeline': [],
-            'agent_performance': {}
+            'agent_performance': {},
+            'session_start': time.time(),
+            'loaded_previous': load_previous
         }
         
         # Initialize agent performance tracking
@@ -146,7 +161,9 @@ class DiscoverySimulation:
         print("MATHEMATICAL DISCOVERY SIMULATION".center(70))
         print("="*70)
         print(f"Explorers: {len(self.explorers)}")
-        print(f"Knowledge Base: {len(self.kb.theorems)} initial theorems")
+        print(f"Knowledge Base: {len(self.kb.theorems)} theorems")
+        print(f"  - Classical: {len([t for t in self.kb.theorems.values() if not t.is_novel])}")
+        print(f"  - Novel Discoveries: {len(self.kb.get_novel_discoveries())}")
         print(f"Duration: {duration_seconds}s or {max_cycles} cycles")
         print("="*70 + "\n")
         
@@ -167,7 +184,7 @@ class DiscoverySimulation:
         print("SIMULATION COMPLETE".center(70))
         print("="*70)
         self.print_detailed_statistics()
-        self.save_state()
+        self.save_state(final=True)
         
     def print_statistics(self):
         """Print current statistics."""
@@ -226,17 +243,26 @@ class DiscoverySimulation:
         for field, count in kb_stats['by_field'].items():
             if count > 0:
                 print(f"      {field}: {count}")
+                
+        # Show sample novel discoveries
+        novel_theorems = self.kb.get_novel_discoveries()
+        if novel_theorems:
+            print(f"\n💡 SAMPLE NOVEL DISCOVERIES:")
+            for theorem in novel_theorems[:3]:  # Show up to 3
+                print(f"   • {theorem.statement[:60]}...")
+                print(f"     (by {theorem.discovered_by}, field: {theorem.field.value})")
     
-    def save_state(self):
+    def save_state(self, final: bool = False):
         """Save simulation state to files."""
         # Create output directory if it doesn't exist
         os.makedirs('output', exist_ok=True)
         
-        # Save knowledge base
-        self.kb.save_to_file('output/knowledge_base.json')
+        # Save knowledge base (accumulates across runs)
+        self.kb.save_to_file(self.knowledge_file)
         
-        # Save simulation statistics
-        with open('output/simulation_stats.json', 'w') as f:
+        # Save simulation statistics (session-specific)
+        stats_file = 'output/simulation_stats.json' if not final else 'output/simulation_final.json'
+        with open(stats_file, 'w') as f:
             # Prepare stats for JSON serialization
             stats_to_save = {
                 'timestamp': time.time(),
@@ -251,7 +277,25 @@ class DiscoverySimulation:
         with open('output/discovery_timeline.json', 'w') as f:
             json.dump(self.stats['discovery_timeline'], f, indent=2)
         
-        print(f"💾 State saved (cycle {self.cycle_count})")
+        # Save a session history file (append mode)
+        history_file = 'output/discovery_history.jsonl'
+        with open(history_file, 'a') as f:
+            session_summary = {
+                'session_id': f"session_{int(self.start_time)}",
+                'timestamp': time.time(),
+                'duration': time.time() - self.start_time,
+                'cycles': self.cycle_count,
+                'discoveries': self.stats['successful_discoveries'],
+                'novel': self.stats['novel_theorems'],
+                'refuted': self.stats['refuted_conjectures'],
+                'total_kb_size': len(self.kb.theorems)
+            }
+            f.write(json.dumps(session_summary) + '\n')
+        
+        if final:
+            print(f"\n💾 State saved to {stats_file}")
+        else:
+            print(f"💾 State saved (cycle {self.cycle_count})")
 
 def main():
     parser = argparse.ArgumentParser(description='Run mathematical discovery simulation')
@@ -263,12 +307,18 @@ def main():
                        help='Maximum number of cycles')
     parser.add_argument('--save-interval', type=int, default=20,
                        help='Save state every N cycles')
+    parser.add_argument('--fresh-start', action='store_true',
+                       help='Start with fresh knowledge base (ignore previous discoveries)')
+    parser.add_argument('--knowledge-file', default='output/knowledge_base.json',
+                       help='Path to knowledge base file')
     
     args = parser.parse_args()
     
     sim = DiscoverySimulation(
         num_explorers=args.explorers,
-        save_interval=args.save_interval
+        save_interval=args.save_interval,
+        load_previous=not args.fresh_start,
+        knowledge_file=args.knowledge_file
     )
     
     sim.run_simulation(
