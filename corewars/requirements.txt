@@ -1,0 +1,2 @@
+# Core Wars AI Battle Arena
+# No external dependencies - uses only Python standard library!
