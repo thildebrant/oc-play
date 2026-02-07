@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Wars AI Battle Arena</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073; }
+            to { text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6; }
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #f0f0f0;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        
+        .nav-tab {
+            padding: 12px 30px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+        
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-tab.active {
+            background: rgba(255,255,255,0.95);
+            color: #764ba2;
+            font-weight: bold;
+        }
+        
+        .content-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h3 {
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        p {
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .strategy-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: transform 0.3s;
+        }
+        
+        .strategy-card:hover {
+            transform: translateX(5px);
+        }
+        
+        .strategy-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+        }
+        
+        tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #17a2b8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .tournament-viz {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .warrior-box {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        #tournamentResults {
+            margin-top: 30px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚔️ Core Wars AI Battle Arena ⚔️</h1>
+            <p class="subtitle">Where Programs Fight for Memory Supremacy</p>
+        </header>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showSection('research')">Research & Theory</button>
+            <button class="nav-tab" onclick="showSection('gameplay')">Gameplay & Strategy</button>
+            <button class="nav-tab" onclick="showSection('tournament')">Tournament Results</button>
+        </div>
+        
+        <!-- Research Section -->
+        <div id="research" class="content-section active">
+            <h2>🔬 Research & Academic Aspects</h2>
+            
+            <h3>Introduction to Core Wars</h3>
+            <p>
+                Core Wars is a programming game created by D.G. Jones and A.K. Dewdney in 1984, where programs 
+                (called "warriors") battle in the memory of a virtual computer called MARS (Memory Array Redcode Simulator). 
+                This implementation serves as a platform for studying emergent behaviors, genetic algorithms, 
+                and competitive coevolution in artificial intelligence.
+            </p>
+            
+            <h3>Theoretical Foundation</h3>
+            <p>
+                The Core Wars environment provides a unique testbed for several areas of computer science research:
+            </p>
+            <ul style="margin-left: 30px; color: #666; line-height: 1.8;">
+                <li><strong>Genetic Algorithms:</strong> Warriors evolve through mutation and crossover operations</li>
+                <li><strong>Game Theory:</strong> Strategies emerge from competitive dynamics</li>
+                <li><strong>Self-Modifying Code:</strong> Programs can alter their own instructions during execution</li>
+                <li><strong>Artificial Life:</strong> Programs exhibit life-like behaviors (reproduction, competition, adaptation)</li>
+            </ul>
+            
+            <h3>The Redcode Language</h3>
+            <div class="code-block">
+; Example: The classic Imp warrior
+MOV 0, 1  ; Copy instruction at address 0 to address 1
+
+; Example: Dwarf bomber
+ADD #4, 3    ; Add 4 to the value at offset 3
+MOV 2, @2    ; Move instruction at offset 2 to indirect address
+JMP -2       ; Jump back 2 instructions
+DAT 0, 0     ; Data (kills processes that execute it)
+            </div>
+            
+            <h3>Genetic Algorithm Implementation</h3>
+            <p>
+                Our AI agents use genetic algorithms to evolve warriors over generations:
+            </p>
+            <ol style="margin-left: 30px; color: #666; line-height: 1.8;">
+                <li>Initialize population with random or template-based warriors</li>
+                <li>Evaluate fitness through combat simulation</li>
+                <li>Select parents using tournament selection</li>
+                <li>Apply crossover and mutation operators</li>
+                <li>Replace population with offspring</li>
+                <li>Repeat until convergence or maximum generations</li>
+            </ol>
+            
+            <div class="info-box">
+                <strong>Research Applications:</strong> This system can be used to study coevolution, 
+                the evolution of complexity, arms races in artificial systems, and the emergence of 
+                cooperative or parasitic behaviors in competitive environments.
+            </div>
+            
+            <h3>Emergent Strategies</h3>
+            <p>
+                Through evolutionary pressure, several canonical strategies have emerged:
+            </p>
+            <div class="strategy-card">
+                <div class="strategy-name">Replicators (Paper)</div>
+                <p>Create multiple copies of themselves, overwhelming opponents through sheer numbers</p>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-name">Bombers (Stone)</div>
+                <p>Systematically write DAT instructions across memory to kill enemy processes</p>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-name">Scanners</div>
+                <p>Search for opponents before attacking, improving accuracy but sacrificing speed</p>
+            </div>
+            
+            <h3>Performance Metrics</h3>
+            <p>
+                Warrior effectiveness is measured through multiple dimensions:
+            </p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">80,000</div>
+                    <div class="stat-label">Max Cycles per Battle</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8,000</div>
+                    <div class="stat-label">Memory Cells (MARS Core)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8,000</div>
+                    <div class="stat-label">Max Processes per Warrior</div>
+                </div>
+            </div>
+            
+            <h3>References & Further Reading</h3>
+            <ul style="margin-left: 30px; color: #666; line-height: 1.8;">
+                <li>Dewdney, A.K. (1984). "Computer Recreations: Core Wars". Scientific American.</li>
+                <li>Strack, S. (1996). "Core Wars: The Final Word". CoreWars Newsletter.</li>
+                <li>Holland, J.H. (1975). "Adaptation in Natural and Artificial Systems". University of Michigan Press.</li>
+                <li>Axelrod, R. (1984). "The Evolution of Cooperation". Basic Books.</li>
+            </ul>
+        </div>
+        
+        <!-- Gameplay Section -->
+        <div id="gameplay" class="content-section">
+            <h2>🎮 Gameplay & Strategy Insights</h2>
+            
+            <h3>Getting Started</h3>
+            <p>
+                Welcome to the tactical world of Core Wars! Whether you're a beginner or an experienced 
+                programmer, understanding the key strategies is essential for victory.
+            </p>
+            
+            <h3>The Rock-Paper-Scissors of Core Wars</h3>
+            <div class="warning-box">
+                <strong>⚡ Key Insight:</strong> No single strategy dominates all others. Success comes from 
+                understanding matchups and adapting your approach.
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>Strong Against</th>
+                        <th>Weak Against</th>
+                        <th>Key Tactics</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Imp</strong></td>
+                        <td>Stones, Simple Bombers</td>
+                        <td>Imp Gates, Spirals</td>
+                        <td>Simplicity is strength - one instruction that copies itself</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Stone/Bomber</strong></td>
+                        <td>Scanners, Papers</td>
+                        <td>Imps, Fast Replicators</td>
+                        <td>Carpet bomb memory with DAT instructions</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scanner</strong></td>
+                        <td>Stationary targets</td>
+                        <td>Fast attackers, Imps</td>
+                        <td>Find enemy, then strike precisely</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Paper/Replicator</strong></td>
+                        <td>Slow bombers</td>
+                        <td>Wide-spread bombers</td>
+                        <td>Multiply rapidly to survive attacks</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Pro Tips from the Arena</h3>
+            <div class="strategy-card">
+                <div class="strategy-name">🎯 Tip #1: Start Simple</div>
+                <p>The Imp (MOV 0, 1) is just one instruction but can defeat complex warriors. Master the basics before adding complexity.</p>
+            </div>
+            
+            <div class="strategy-card">
+                <div class="strategy-name">⚡ Tip #2: Speed vs. Effectiveness</div>
+                <p>Fast warriors hit first but may miss. Slow, methodical warriors are thorough but vulnerable to quick strikes.</p>
+            </div>
+            
+            <div class="strategy-card">
+                <div class="strategy-name">🛡️ Tip #3: Defense Through Offense</div>
+                <p>There's no armor in Core Wars. The best defense is corrupting your opponent's code before they corrupt yours.</p>
+            </div>
+            
+            <div class="strategy-card">
+                <div class="strategy-name">🧬 Tip #4: Evolve and Adapt</div>
+                <p>Use the genetic algorithm to discover new strategies. Sometimes random mutations create unexpectedly powerful warriors.</p>
+            </div>
+            
+            <h3>Classic Warrior Examples</h3>
+            
+            <div class="code-block">
+; The Dwarf - A Classic Bomber
+; Drops a DAT bomb every 4 addresses
+ADD #4, 3    ; Increment bomb location
+MOV 2, @2    ; Drop the bomb
+JMP -2       ; Repeat
+DAT 0, 0     ; The bomb
+            </div>
+            
+            <div class="code-block">
+; The Imp - Simplest Replicator
+MOV 0, 1     ; Copy myself to next location
+             ; That's it!
+            </div>
+            
+            <div class="code-block">
+; Stone - Optimized Bomber
+MOV <0, 2    ; Self-modifying bomber
+ADD #2, -1   ; Increment and bomb
+JMP -2       ; Loop
+DAT 0, 2     ; Bomb with step size
+            </div>
+            
+            <h3>Battle Visualization Legend</h3>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff4444;"></div>
+                    <span>Warrior 1 Code</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4444ff;"></div>
+                    <span>Warrior 2 Code</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffff44;"></div>
+                    <span>Execution Pointer</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #333333;"></div>
+                    <span>Empty Memory</span>
+                </div>
+            </div>
+            
+            <h3>How to Run Battles</h3>
+            <div class="code-block">
+# Quick visual battle
+python3 battle.py --quick --visualize
+
+# Tournament between strategies
+python3 battle.py --rounds 20 --strategy1 bomber --strategy2 scanner
+
+# Run the tactics analyzer
+python3 tactics_analyzer.py
+
+# Interactive mode
+./watch.sh
+            </div>
+            
+            <div class="info-box">
+                <strong>🏆 Challenge:</strong> Can you create a warrior that defeats all the classic strategies? 
+                Use the genetic algorithm to evolve your champion, or hand-craft your own Redcode masterpiece!
+            </div>
+        </div>
+        
+        <!-- Tournament Results Section -->
+        <div id="tournament" class="content-section">
+            <h2>🏆 Tournament Results & Analysis</h2>
+            
+            <div class="info-box">
+                <strong>Note:</strong> Run <code>python3 tactics_analyzer.py</code> to generate fresh tournament data.
+                Results below show strategy matchups and effectiveness ratings.
+            </div>
+            
+            <h3>Strategy Effectiveness Matrix</h3>
+            <p>
+                Based on round-robin tournaments between different warrior strategies:
+            </p>
+            
+            <div id="tournamentResults">
+                <p style="color: #999; font-style: italic;">
+                    Tournament data will appear here after running tactics_analyzer.py
+                </p>
+            </div>
+            
+            <h3>Evolutionary Progress</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalBattles">0</div>
+                    <div class="stat-label">Total Battles Simulated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgCycles">0</div>
+                    <div class="stat-label">Average Battle Length</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="drawRate">0%</div>
+                    <div class="stat-label">Draw Rate</div>
+                </div>
+            </div>
+            
+            <h3>Warriors in the Arena</h3>
+            <div class="tournament-viz">
+                <div class="warrior-box">Imp</div>
+                <div class="warrior-box">Dwarf</div>
+                <div class="warrior-box">Stone</div>
+                <div class="warrior-box">Scanner</div>
+                <div class="warrior-box">Replicator</div>
+                <div class="warrior-box">Paper</div>
+                <div class="warrior-box">Classic Dwarf</div>
+                <div class="warrior-box">Evolved Champion</div>
+            </div>
+            
+            <h3>Meta Analysis</h3>
+            <p>
+                The tournament reveals interesting dynamics in the Core Wars ecosystem:
+            </p>
+            <ul style="margin-left: 30px; color: #666; line-height: 1.8;">
+                <li><strong>Imp Dominance:</strong> Despite its simplicity, the Imp often performs surprisingly well</li>
+                <li><strong>Bomber Reliability:</strong> Stone and Dwarf variants show consistent performance</li>
+                <li><strong>Scanner Precision:</strong> Effective against predictable opponents but vulnerable to fast movers</li>
+                <li><strong>Replicator Chaos:</strong> Paper strategies create unpredictable battle dynamics</li>
+                <li><strong>Evolutionary Advantage:</strong> AI-evolved warriors often discover non-obvious strategies</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Mark tab as active
+            event.target.classList.add('active');
+        }
+        
+        // Load tournament results if available
+        async function loadTournamentData() {
+            try {
+                const response = await fetch('tournament_results.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    displayTournamentResults(data);
+                }
+            } catch (error) {
+                console.log('No tournament data available yet');
+            }
+        }
+        
+        function displayTournamentResults(data) {
+            const resultsDiv = document.getElementById('tournamentResults');
+            
+            if (data.tournament && data.tournament.rankings) {
+                let html = '<h4>Tournament Rankings</h4>';
+                html += '<table><thead><tr><th>Rank</th><th>Strategy</th><th>Points</th><th>Win Rate</th></tr></thead><tbody>';
+                
+                data.tournament.rankings.forEach((item, index) => {
+                    html += `<tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.name}</strong></td>
+                        <td>${item.points}</td>
+                        <td>${(item.win_rate * 100).toFixed(1)}%</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                resultsDiv.innerHTML = html;
+                
+                // Update stats
+                if (data.tournament.detailed_battles) {
+                    document.getElementById('totalBattles').textContent = data.tournament.detailed_battles.length;
+                    
+                    const avgCycles = data.tournament.detailed_battles.reduce((sum, b) => sum + b.cycles, 0) / data.tournament.detailed_battles.length;
+                    document.getElementById('avgCycles').textContent = Math.round(avgCycles).toLocaleString();
+                    
+                    const draws = data.tournament.detailed_battles.filter(b => b.winner === 'DRAW').length;
+                    const drawRate = (draws / data.tournament.detailed_battles.length * 100).toFixed(1);
+                    document.getElementById('drawRate').textContent = drawRate + '%';
+                }
+            }
+        }
+        
+        // Load data on page load
+        loadTournamentData();
+    </script>
+</body>
+</html>
