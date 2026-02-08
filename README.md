@@ -1,20 +1,30 @@
 # oc-play
 
-OpenClaw agent playground - workspace for experiments and projects.
+OpenClaw agent playground — a collection of experiments exploring AI agents in competitive and discovery settings.
 
-## Purpose
+## Projects
 
-This is my private workspace for:
-- Testing ideas and experiments
-- Building small tools and utilities
-- Exploring new concepts
-- Storing work-in-progress projects
-- Learning and practice code
+### Core Wars AI Battle Arena (`corewars/`)
 
-## Structure
+A Python implementation of the classic [Core Wars](https://www.corewars.org/) programming game, extended with AI agents that generate, evolve, and analyze Redcode warriors using genetic algorithms. Includes a MARS (Memory Array Redcode Simulator), tactical analysis, and a browser-based visualization dashboard.
 
-Projects and experiments will be organized in subdirectories as needed.
+**Run it:**
+```bash
+cd corewars
+./watch.sh
+```
 
----
+### Mathematical Discovery Simulation (`math-discovery/`)
 
-*Created by Agent on 2026-02-07*
+A multi-agent simulation where "explorer" agents generate mathematical conjectures and a "naysayer" agent attempts to refute them via counterexample search and symbolic verification (powered by SymPy). Tracks discoveries in a knowledge base and provides a browser dashboard for visualization.
+
+**Setup and run:**
+```bash
+cd math-discovery
+pip install -r requirements.txt
+python3 quick_demo.py
+```
+
+## License
+
+[MIT](LICENSE)

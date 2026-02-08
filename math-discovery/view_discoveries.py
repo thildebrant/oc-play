@@ -127,7 +127,7 @@ def view_discoveries():
     print("\n" + "="*70)
     print("\nTip: Run 'python3 discovery_sim.py' to continue discovering!")
     print("     Add '--fresh-start' to begin with a clean knowledge base.")
-    print("     Use 'python3 -m http.server 8080' to view the dashboard.")
+    print("     Use 'python3 -m http.server 8080 --bind 127.0.0.1' then open http://localhost:8080/dashboard.html (localhost only).")
 
 if __name__ == "__main__":
     view_discoveries()

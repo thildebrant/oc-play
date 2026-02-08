@@ -279,7 +279,7 @@ def main():
         json.dump(results, f, indent=2)
     
     print("\n✅ Tournament complete! Results saved to tournament_results.json")
-    print("   Run 'python3 -m http.server 8000' and open index.html to view the webpage.")
+    print("   Run 'python3 -m http.server 8000 --bind 127.0.0.1' then open http://localhost:8000/index.html (serves current directory — use on localhost only).")
 
 if __name__ == "__main__":
     main()

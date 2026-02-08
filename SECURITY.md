@@ -1,21 +1,13 @@
 # Security Policy
 
-## Supported Versions
-
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
-
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you discover a security issue in this project, please open a GitHub issue
+or contact the repository owner directly. This is an experimental project and
+does not handle sensitive data, but reports are still appreciated.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+## Scope
+
+This repository contains two self-contained, offline Python projects. Neither
+project makes network requests, handles authentication, or processes untrusted
+input in production. The HTML dashboards are intended for local viewing only.

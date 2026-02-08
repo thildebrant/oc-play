@@ -562,6 +562,7 @@ python3 tactics_analyzer.py
     </div>
     
     <script>
+        function esc(s) { const d = document.createElement("div"); d.textContent = String(s); return d.innerHTML; }
         function showSection(sectionId) {
             // Hide all sections
             document.querySelectorAll('.content-section').forEach(section => {
@@ -602,10 +603,10 @@ python3 tactics_analyzer.py
                 
                 data.tournament.rankings.forEach((item, index) => {
                     html += `<tr>
-                        <td>${index + 1}</td>
-                        <td><strong>${item.name}</strong></td>
-                        <td>${item.points}</td>
-                        <td>${(item.win_rate * 100).toFixed(1)}%</td>
+                        <td>${esc(index + 1)}</td>
+                        <td><strong>${esc(item.name)}</strong></td>
+                        <td>${esc(item.points)}</td>
+                        <td>${esc((item.win_rate * 100).toFixed(1))}%</td>
                     </tr>`;
                 });
                 

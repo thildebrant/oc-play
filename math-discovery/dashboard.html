@@ -406,6 +406,7 @@
     </div>
     
     <script>
+        function esc(s) { const d = document.createElement("div"); d.textContent = String(s); return d.innerHTML; }
         let lastUpdate = 0;
         let autoRefresh = true;
         
@@ -482,11 +483,11 @@
                 const li = document.createElement('li');
                 li.className = 'agent-item';
                 li.innerHTML = `
-                    <span class="agent-name">${name}</span>
+                    <span class="agent-name">${esc(name)}</span>
                     <div class="agent-stats">
-                        <span class="stat-badge success">${stats.discoveries || 0} discoveries</span>
-                        <span class="stat-badge attempts">${stats.attempts || 0} attempts</span>
-                        <span class="stat-badge refuted">${stats.refuted || 0} refuted</span>
+                        <span class="stat-badge success">${esc(stats.discoveries || 0)} discoveries</span>
+                        <span class="stat-badge attempts">${esc(stats.attempts || 0)} attempts</span>
+                        <span class="stat-badge refuted">${esc(stats.refuted || 0)} refuted</span>
                     </div>
                 `;
                 agentList.appendChild(li);
@@ -513,13 +514,13 @@
                     : discovery.status === 'refuted' ? '❌' : '↔️';
                 
                 div.innerHTML = `
-                    <div class="theorem-statement">${statusIcon} ${discovery.statement}</div>
+                    <div class="theorem-statement">${statusIcon} ${esc(discovery.statement)}</div>
                     <div class="meta-info">
-                        <span>${discovery.explorer}</span>
-                        <span>${discovery.field}</span>
-                        <span>Cycle ${discovery.cycle}</span>
+                        <span>${esc(discovery.explorer)}</span>
+                        <span>${esc(discovery.field)}</span>
+                        <span>Cycle ${esc(discovery.cycle)}</span>
                     </div>
-                    ${discovery.refutation ? `<div style="color: #f44336; font-size: 12px; margin-top: 5px;">Refutation: ${discovery.refutation}</div>` : ''}
+                    ${discovery.refutation ? `<div style="color: #f44336; font-size: 12px; margin-top: 5px;">Refutation: ${esc(discovery.refutation)}</div>` : ''}
                 `;
                 
                 container.appendChild(div);
@@ -548,8 +549,8 @@
                 
                 div.innerHTML = `
                     <div class="timeline-dot ${dotClass}"></div>
-                    <div style="font-size: 12px;">${item.explorer}</div>
-                    <div style="font-size: 10px; color: #666;">Cycle ${item.cycle}</div>
+                    <div style="font-size: 12px;">${esc(item.explorer)}</div>
+                    <div style="font-size: 10px; color: #666;">Cycle ${esc(item.cycle)}</div>
                 `;
                 
                 container.appendChild(div);
@@ -568,8 +569,8 @@
                 div.style.height = `${(count / maxValue) * 180}px`;
                 
                 div.innerHTML = `
-                    <div class="bar-value">${count}</div>
-                    <div class="bar-label">${field.replace('_', ' ')}</div>
+                    <div class="bar-value">${esc(count)}</div>
+                    <div class="bar-label">${esc(field.replace('_', ' '))}</div>
                 `;
                 
                 container.appendChild(div);

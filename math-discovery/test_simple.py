@@ -40,10 +40,12 @@ try:
     
 except ImportError as e:
     print(f"❌ Import error: {e}")
-    print("\nTrying to install missing dependencies...")
-    os.system("pip install sympy numpy")
-    
+    print("\nInstall missing dependencies with:")
+    print("  pip install -r requirements.txt")
+    sys.exit(1)
+
 except Exception as e:
     print(f"❌ Error: {e}")
     import traceback
     traceback.print_exc()
+    sys.exit(1)
