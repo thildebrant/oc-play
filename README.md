@@ -2,6 +2,23 @@
 
 OpenClaw agent playground — a collection of experiments exploring AI agents in competitive and discovery settings.
 
+## ⚠️ Security Warning
+
+**USE AT YOUR OWN RISK.** This is experimental research code that has **NOT** been professionally security audited. The code contains known vulnerabilities including:
+
+- **Code injection vulnerabilities** via SymPy expression parsing
+- **Path traversal risks** in file operations
+- **Resource exhaustion potential** without proper limits
+- **Unvalidated input processing** from JSON files
+
+**DO NOT:**
+- Use this code in production environments
+- Process untrusted or user-supplied data
+- Expose this code to the internet
+- Load JSON files from untrusted sources
+
+**This software is provided "AS IS" without warranty of any kind.** It is intended for educational and research purposes only in controlled, offline environments. See [SECURITY.md](SECURITY.md) for details.
+
 ## Projects
 
 ### Core Wars AI Battle Arena (`corewars/`)
